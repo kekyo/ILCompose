@@ -4,9 +4,7 @@
 
 [![Project Status: WIP – Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
 
-<!--
 [![NuGet ILCompose](https://img.shields.io/nuget/v/ILCompose.svg?style=flat)](https://www.nuget.org/packages/ILCompose)
--->
 [![CI build (main)](https://github.com/kekyo/ILCompose/workflows/.NET/badge.svg?branch=main)](https://github.com/kekyo/ILCompose/actions?query=branch%3Amain)
 
 ## What is this?
