@@ -49,7 +49,7 @@ In IL2C, CIL unit test code was synthesized into .NET assemblies using
   [Custom attributes extensions](https://docs.nunit.org/articles/nunit/extending-nunit/Custom-Attributes.html) has
   caused problems on the JetBrains Rider's test explorer, and I wanted to eliminate this.
 * To solve the above, needed to resolve a problem with custom attributes being removed
-  by the `forwardref` attribute in LSupport.
+  by the `forwardref` attribute in ILSupport.
 
 Therefore, I developed this package as a general-purpose package.
 
