@@ -11,6 +11,8 @@
 
 ## What is this?
 
+TODO: WIP now, not completed.
+
 Compose partially implementation both .NET language and IL assembler.
 
 In sample.cs:
