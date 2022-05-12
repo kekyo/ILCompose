@@ -23,6 +23,7 @@ namespace ILCompose
         private readonly string basePath;
         private readonly (string from, string to)? adjustCorlib;
         private readonly DefaultAssemblyResolver assemblyResolver = new();
+        private readonly Dictionary<Document, Document> cachedDocuments = new();
 
         public Composer(
             ILogger logger, string[] referenceBasePaths,
@@ -176,6 +177,30 @@ namespace ILCompose
             }
 
             CopyCustomAttributes(fm.CustomAttributes, rm.CustomAttributes);
+
+            foreach (var rsp in rm.DebugInformation.SequencePoints)
+            {
+                var rd = rsp.Document;
+                if (!this.cachedDocuments.TryGetValue(rd, out var fd))
+                {
+                    fd = new Document(rd.Url);
+                    fd.Language = rd.Language;
+                    fd.LanguageGuid = rd.LanguageGuid;
+                    fd.LanguageVendorGuid = rd.LanguageVendorGuid;
+                    fd.LanguageVendor = rd.LanguageVendor;
+                    fd.TypeGuid = rd.TypeGuid;
+                    fd.EmbeddedSource = rd.EmbeddedSource;
+                    this.cachedDocuments.Add(rd, fd);
+                }
+
+                var fsp = new SequencePoint(rbody.Instructions[rsp.Offset], fd);
+                fsp.StartLine = rsp.StartLine;
+                fsp.StartColumn = rsp.StartColumn;
+                fsp.EndLine = rsp.EndLine;
+                fsp.EndColumn = rsp.EndColumn;
+
+                fm.DebugInformation.SequencePoints.Add(fsp);
+            }
         }
 
         public bool Compose(string primaryPath, string[] referencePaths)
