@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>ILCompose</id>
+    <version>$PackageVersion$</version>
+    <authors>Kouji Matsui (@kozy_kekyo, @kekyo2)</authors>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="expression">Apache-2.0</license>
+    <licenseUrl>https://licenses.nuget.org/Apache-2.0</licenseUrl>
+    <icon>ILCompose.100.png</icon>
+    <projectUrl>https://github.com/kekyo/ILCompose.git</projectUrl>
+    <description>Compose partially implementation both .NET language and IL assembler.</description>
+    <releaseNotes>$PackageReleaseNotes$</releaseNotes>
+    <copyright>Copyright (c) Kouji Matsui</copyright>
+    <tags>ilasm compose ilsupport</tags>
+    <repository type="git" url="https://github.com/kekyo/ILCompose.git" branch="$RepositoryBranch$" commit="$RepositoryCommit$" />
+  </metadata>
+  <files>
+    <file src="..\Images\ILCompose.100.png" target="/" />
+    <file src="build\*.*" target="build" />
+    <file src="buildMultiTargeting\*.*" target="buildMultiTargeting" />
+    <file src="bin\$Configuration$\net462\*.*" target="tools/net462" />
+    <file src="bin\$Configuration$\netcoreapp2.1\*.*" target="tools/netcoreapp2.1" />
+    <file src="bin\$Configuration$\netcoreapp2.2\*.*" target="tools/netcoreapp2.2" />
+    <file src="bin\$Configuration$\netcoreapp3.1\*.*" target="tools/netcoreapp3.1" />
+    <file src="bin\$Configuration$\net5.0\*.*" target="tools/net5.0" />
+    <file src="bin\$Configuration$\net6.0\*.*" target="tools/net6.0" />
+  </files>
+</package>

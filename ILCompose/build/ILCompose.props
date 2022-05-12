@@ -1,0 +1,73 @@
+﻿<!--
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// ILCompose - Compose partially implementation both .NET language and IL assembler.
+// Copyright (c) Kouji Matsui (@kozy_kekyo, @kekyo@mastodon.cloud)
+//
+// Licensed under Apache-v2: https://opensource.org/licenses/Apache-2.0
+//
+/////////////////////////////////////////////////////////////////////////////////////
+-->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup Condition="'$(MSBuildRuntimeType)' == 'Core'">
+    <_ILCompose_RuntimeName>dotnet </_ILCompose_RuntimeName>
+    <_ILCompose_ExecutableName>ilcompose.dll</_ILCompose_ExecutableName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(MSBuildRuntimeType)' == 'Full'">
+    <_ILCompose_RuntimeName></_ILCompose_RuntimeName>
+    <_ILCompose_ExecutableName>ilcompose.exe</_ILCompose_ExecutableName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(MSBuildRuntimeType)' == 'Mono'">
+    <_ILCompose_RuntimeName>mono </_ILCompose_RuntimeName>
+    <_ILCompose_ExecutableName>ilcompose.exe</_ILCompose_ExecutableName>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <_ILCompose_ScriptBaseDir>$(MSBuildThisFileDirectory)</_ILCompose_ScriptBaseDir>
+  </PropertyGroup>
+
+  <!-- ============================================================================= -->
+
+  <!-- https://docs.microsoft.com/en-us/visualstudio/msbuild/msbuild-roslyncodetaskfactory?view=vs-2022#provide-backward-compatibility -->
+  <Choose>
+    <When Condition="'$(MSBuildVersion.Substring(0,2))' &gt;= 16 OR ('$(MSBuildVersion.Substring(0,2))' == 15 AND '$(MSBuildVersion.Substring(3,1))' &gt;= 8)">
+      <PropertyGroup>
+        <_ILCompose_TaskFactory>RoslynCodeTaskFactory</_ILCompose_TaskFactory>
+      </PropertyGroup>
+    </When>
+    <Otherwise>
+      <PropertyGroup>
+        <_ILCompose_TaskFactory>CodeTaskFactory</_ILCompose_TaskFactory>
+      </PropertyGroup>
+    </Otherwise>
+  </Choose>
+
+  <!-- Custom inlined task -->
+    
+  <UsingTask
+    TaskName="_ILCompose_GetCombinedReferencesBasePath"
+    TaskFactory="$(_ILCompose_TaskFactory)"
+    AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll" >
+    <ParameterGroup>
+      <References ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
+      <CombinedReferencesBasePath Output="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System"/>
+      <Using Namespace="System.IO"/>
+      <Using Namespace="System.Linq"/>
+      <Using Namespace="Microsoft.Build.Framework"/>
+      <Code Type="Fragment" Language="cs">
+<![CDATA[
+        CombinedReferencesBasePath = string.Join(";", References.
+            Where(item => !string.IsNullOrWhiteSpace(item.ItemSpec)).
+            GroupBy(item => Path.GetDirectoryName(Path.GetFullPath(item.ItemSpec))).
+            Select(g => g.Key).
+            Distinct());
+]]>
+      </Code>
+    </Task>
+  </UsingTask>
+
+</Project>

@@ -1,0 +1,143 @@
+﻿<!--
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// ILCompose - Compose partially implementation both .NET language and IL assembler.
+// Copyright (c) Kouji Matsui (@kozy_kekyo, @kekyo@mastodon.cloud)
+//
+// Licensed under Apache-v2: https://opensource.org/licenses/Apache-2.0
+//
+/////////////////////////////////////////////////////////////////////////////////////
+-->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    
+  <!-- Common -->
+    
+  <PropertyGroup>
+    <ILComposeBuildEnable Condition="'$(ILComposeBuildEnable)' == ''">True</ILComposeBuildEnable>
+    <ILComposeBuildLogLevel Condition="'$(ILComposeBuildLogLevel)' == ''">Information</ILComposeBuildLogLevel>
+  </PropertyGroup>
+
+  <!-- Common (internal) -->
+    
+  <PropertyGroup Condition="('$(MSBuildRuntimeType)' == 'Core') AND ('$(MicrosoftNETBuildTasksTFM)' != '')">
+    <_ILCompose_PlatformName>$(MicrosoftNETBuildTasksTFM)</_ILCompose_PlatformName>
+  </PropertyGroup>
+  <PropertyGroup Condition="('$(MSBuildRuntimeType)' == 'Core') AND ('$(MicrosoftNETBuildTasksTFM)' == '') AND ('$(BundledNETCoreAppTargetFrameworkVersion)' != '')">
+    <_ILCompose_PlatformName Condition="$(BundledNETCoreAppTargetFrameworkVersion) &gt;= 5.0">net$(BundledNETCoreAppTargetFrameworkVersion)</_ILCompose_PlatformName>
+    <_ILCompose_PlatformName Condition="$(BundledNETCoreAppTargetFrameworkVersion) &lt; 5.0">netcoreapp$(BundledNETCoreAppTargetFrameworkVersion)</_ILCompose_PlatformName>
+  </PropertyGroup>
+  <PropertyGroup Condition="('$(MSBuildRuntimeType)' == 'Core') AND ('$(MicrosoftNETBuildTasksTFM)' == '') AND ('$(BundledNETCoreAppTargetFrameworkVersion)' == '')">
+    <_ILCompose_PlatformName>netcoreapp2.0</_ILCompose_PlatformName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(MSBuildRuntimeType)' != 'Core'">
+    <_ILCompose_PlatformName>net462</_ILCompose_PlatformName>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <_ILCompose_ToolingDir>$([System.IO.Path]::Combine('$(_ILCompose_ScriptBaseDir)','..','tools','$(_ILCompose_PlatformName)'))</_ILCompose_ToolingDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ILComposeReferenceIL Include="**/*.il" Exclude="obj/**/*.il;bin/**/*.il" />
+  </ItemGroup>
+        
+  <!-- ====================================================================== -->
+
+  <!-- Imported from: Microsoft.NET.Sdk.IL.targets
+    https://github.com/kekyo/IL2C/issues/100#issuecomment-944294766
+    https://github.com/dotnet/runtime/blob/57bfe474518ab5b7cfe6bf7424a79ce3af9d6657/src/coreclr/.nuget/Microsoft.NET.Sdk.IL/targets/Microsoft.NET.Sdk.IL.targets#L29
+  -->
+    
+  <PropertyGroup>
+    <_runtime>$(NETCoreSdkPortableRuntimeIdentifier)</_runtime>
+    <_runtime Condition="'$(_runtime)' == ''">$(NETCoreSdkRuntimeIdentifier)</_runtime>
+    <MicrosoftNetCoreIlasmPackageRuntimeId Condition="'$(MicrosoftNetCoreIlasmPackageRuntimeId)' == ''">$(_runtime)</MicrosoftNetCoreIlasmPackageRuntimeId>
+   
+    <MicrosoftNETCoreToolingVersion Condition="'$(MicrosoftNETCoreToolingVersion)' == ''">6.0.0</MicrosoftNETCoreToolingVersion>
+    <MicrosoftNetCoreIlasmPackageName>runtime.$(MicrosoftNetCoreIlasmPackageRuntimeId).microsoft.netcore.ilasm</MicrosoftNetCoreIlasmPackageName>
+
+    <!-- If ILAsmToolPath is specified, it will be used and no packages will be restored
+        Otherwise packages will be restored and ilasm and ildasm will be referenced from their packages.  -->
+    <_ILCompose_ILAsmCommandDir Condition="'$(ILAsmToolPath)' != ''">$([MSBuild]::NormalizeDirectory($(ILAsmToolPath)))</_ILCompose_ILAsmCommandDir>
+    <CoreCompileDependsOn Condition="'$(ILAsmToolPath)' == ''">$(CoreCompileDependsOn);ResolveIlAsmToolPaths</CoreCompileDependsOn>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(ILAsmToolPath)' == ''">
+    <_ILCompose_ILAsmCommandPackageReference Include="$(MicrosoftNetCoreIlasmPackageName)" Version="$(MicrosoftNETCoreToolingVersion)" />
+    <!-- Made NuGet package referrer likes:
+        For windows x64: runtime.win-x64.Microsoft.NETCore.ILAsm
+        For linux x64: runtime.linux-x64.Microsoft.NETCore.ILAsm
+    -->
+    <PackageReference Include="@(_ILCompose_ILAsmCommandPackageReference)" ExcludeAssets="all" PrivateAssets="all" />
+  </ItemGroup>
+  <Target Name="ResolveIlAsmToolPaths">
+    <ItemGroup>
+        <_ILCompose_ILAsmCommandPackageReference NativePath="$(NuGetPackageRoot)\%(Identity)\%(Version)\runtimes\$(MicrosoftNetCoreIlasmPackageRuntimeId)\native" />
+        <_IlasmSourceFiles Include="%(_ILCompose_ILAsmCommandPackageReference.NativePath)\**\*" />
+    </ItemGroup>
+    <Error Condition="!Exists('%(_ILCompose_ILAsmCommandPackageReference.NativePath)')" Text="Package %(_ILCompose_ILAsmCommandPackageReference.Identity)\%(_ILCompose_ILAsmCommandPackageReference.Version) was not restored" />
+    <PropertyGroup>
+        <_ILCompose_ILAsmCommandDir Condition="'$(_ILCompose_ILAsmCommandDir)' == '' and '%(_ILCompose_ILAsmCommandPackageReference.Identity)' == '$(MicrosoftNetCoreIlasmPackageName)'">%(_ILCompose_ILAsmCommandPackageReference.NativePath)/</_ILCompose_ILAsmCommandDir>
+        <!-- Resolved final tooling path -->
+        <_ILCompose_ILAsmCommandPath>$([System.IO.Path]::Combine('$(_ILCompose_ILAsmCommandDir)','ilasm'))</_ILCompose_ILAsmCommandPath>
+    </PropertyGroup>
+  </Target>
+        
+  <!-- ====================================================================== -->
+
+  <Target Name="ILComposeBuildAfterCompile" AfterTargets="Compile"
+    Condition="'$(ILComposeBuildEnable)' == 'True'">
+    <CallTarget Targets="ILComposePrepare; ILComposeAssembleIL; ILComposeBuild" />
+  </Target>
+    
+  <Target Name="ILComposePrepare">
+    <PropertyGroup>
+      <!-- Maybe `IntermediateAssembly` is only one file. -->
+      <_ILCompose_PrimaryPath>@(IntermediateAssembly->'&quot;%(FullPath)&quot;', ' ')</_ILCompose_PrimaryPath>
+      <_ILCompose_ReferencePaths>@(IntermediateAssembly->'&quot;%(RootDir)%(Directory)%(Filename)_ref%(Extension)&quot;', ' ')</_ILCompose_ReferencePaths>
+      <_ILCompose_ReferencePathOutputs>@(IntermediateAssembly->'&quot;%(RootDir)%(Directory)%(Filename)_ref%(Extension)&quot;', ';')</_ILCompose_ReferencePathOutputs>
+    </PropertyGroup>
+  </Target>
+    
+  <Target Name="ILComposeAssembleIL">
+    <PropertyGroup>
+      <_ILCompose_ILAsmCommand>&quot;$(_ILCompose_ILAsmCommandPath)&quot; -nologo -quite -debug -pdbfmt=portable -dll -output=$(_ILCompose_ReferencePaths)</_ILCompose_ILAsmCommand>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Optimize)' == 'true'">
+      <_ILCompose_ILAsmCommand>$(_ILCompose_ILAsmCommand) -optimize</_ILCompose_ILAsmCommand>
+    </PropertyGroup>
+    <!-- Replace '[netstandard]` to `[mscorlib]` is build target is .NET Framework. -->
+      <!-- TODO: implement in ilcompose
+    <WriteLinesToFile Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'"
+                        File="$(MergedILPath)" Lines="@(ILLines->Replace('[netstandard]','[mscorlib]'))" Overwrite="true" />
+    <WriteLinesToFile Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'"
+                        File="$(MergedILPath)" Lines="@(ILLines->Replace('[mscorlib]','[netstandard]'))" Overwrite="true" />
+        -->
+    <Message Importance="normal" Text="ILCompose: ilasm $(_ILCompose_ReferencePaths)" />
+    <Exec Command="$(_ILCompose_ILAsmCommand) @(ILComposeReferenceIL->'&quot;%(FullPath)&quot;', ' ')" />
+    <ItemGroup>
+      <FileWrites Include="$(_ILCompose_ReferencePathOutputs)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="ILComposeBuild">
+    <_ILCompose_GetCombinedReferencesBasePath References="@(ReferencePath)">
+      <Output TaskParameter="CombinedReferencesBasePath" PropertyName="_ILCompose_CombinedReferencesBasePath" />
+    </_ILCompose_GetCombinedReferencesBasePath>
+    <PropertyGroup>
+      <ILComposeBuildToolingRuntimeName Condition="'$(ILComposeBuildToolingRuntimeName)' == ''">$(_ILCompose_RuntimeName)</ILComposeBuildToolingRuntimeName>
+      <ILComposeBuildToolingDir Condition="'$(ILComposeBuildToolingDir)' == ''">$([System.IO.Path]::GetFullPath('$(_ILCompose_ToolingDir)'))</ILComposeBuildToolingDir>
+      <ILComposeBuildToolingPath Condition="'$(ILComposeBuildToolingPath)' == ''">$([System.IO.Path]::Combine('$(ILComposeBuildToolingDir)','$(_ILCompose_ExecutableName)'))</ILComposeBuildToolingPath>
+      <_ILCompose_CombinedReferenceBasePathOption>--refs=&quot;$(_ILCompose_CombinedReferencesBasePath)&quot;</_ILCompose_CombinedReferenceBasePathOption>
+      <_ILCompose_AdjustCorLibOption Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">--adjustCorLib=netstandard,mscorlib</_ILCompose_AdjustCorLibOption>
+      <_ILCompose_AdjustCorLibOption Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'">--adjustCorLib=mscorlib,netstandard</_ILCompose_AdjustCorLibOption>
+      <_ILCompose_BuildLogLevelOption>--logLevel=$(ILComposeBuildLogLevel) --logtfm=&quot;$(TargetFramework)&quot;</_ILCompose_BuildLogLevelOption>
+      <_ILCompose_LaunchDebuggerOption Condition="$(IL2CBuildLaunchDebugger)">--launchDebugger</_ILCompose_LaunchDebuggerOption>
+      <_ILCompose_Options>$(_ILCompose_BuildLogLevelOption) $(_ILCompose_LaunchDebuggerOption) $(_ILCompose_CombinedReferenceBasePathOption) $(_ILCompose_AdjustCorLibOption)</_ILCompose_Options>
+    </PropertyGroup>
+    <Exec WorkingDirectory="$(ILComposeBuildToolingDir)"
+        Command="$(ILComposeBuildToolingRuntimeName)&quot;$(ILComposeBuildToolingPath)&quot; $(_ILCompose_Options) &quot;$(_ILCompose_PrimaryPath)&quot; $(_ILCompose_ReferencePaths)" />
+    <ItemGroup>
+      <FileWrites Include="$(_ILCompose_PrimaryPath)" />
+    </ItemGroup>
+  </Target>
+</Project>
