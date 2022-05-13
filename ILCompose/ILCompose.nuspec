@@ -12,7 +12,7 @@
     <description>Compose partially implementation both .NET language and IL assembler.</description>
     <releaseNotes>$PackageReleaseNotes$</releaseNotes>
     <copyright>Copyright (c) Kouji Matsui</copyright>
-    <tags>ilasm compose ilsupport</tags>
+    <tags>ilasm compose mixin ilsupport inline-asm cil msil</tags>
     <repository type="git" url="https://github.com/kekyo/ILCompose.git" branch="$RepositoryBranch$" commit="$RepositoryCommit$" />
   </metadata>
   <files>
