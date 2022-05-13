@@ -7,7 +7,7 @@
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
 
-    <IL2CBuildLaunchDebugger>false</IL2CBuildLaunchDebugger>
+    <ILComposeLaunchDebugger>false</ILComposeLaunchDebugger>
   </PropertyGroup>
 
   <Import Project="..\ILCompose\build\ILCompose.targets" />

@@ -15,6 +15,7 @@
   <PropertyGroup>
     <ILComposeBuildEnable Condition="'$(ILComposeBuildEnable)' == ''">True</ILComposeBuildEnable>
     <ILComposeBuildLogLevel Condition="'$(ILComposeBuildLogLevel)' == ''">Information</ILComposeBuildLogLevel>
+    <ILComposeLaunchDebugger Condition="'$(ILComposeLaunchDebugger)' == ''">false</ILComposeLaunchDebugger>
   </PropertyGroup>
 
   <!-- Common (internal) -->
@@ -124,7 +125,7 @@
       <_ILCompose_AdjustCorLibOption Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">--adjustCorLib=netstandard,mscorlib</_ILCompose_AdjustCorLibOption>
       <_ILCompose_AdjustCorLibOption Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'">--adjustCorLib=mscorlib,netstandard</_ILCompose_AdjustCorLibOption>
       <_ILCompose_BuildLogLevelOption>--logLevel=$(ILComposeBuildLogLevel) --logtfm=&quot;$(TargetFramework)&quot;</_ILCompose_BuildLogLevelOption>
-      <_ILCompose_LaunchDebuggerOption Condition="$(IL2CBuildLaunchDebugger)">--launchDebugger</_ILCompose_LaunchDebuggerOption>
+      <_ILCompose_LaunchDebuggerOption Condition="$(ILComposeLaunchDebugger)">--launchDebugger</_ILCompose_LaunchDebuggerOption>
       <_ILCompose_Options>$(_ILCompose_BuildLogLevelOption) $(_ILCompose_LaunchDebuggerOption) $(_ILCompose_CombinedReferenceBasePathOption) $(_ILCompose_AdjustCorLibOption)</_ILCompose_Options>
     </PropertyGroup>
     <Exec WorkingDirectory="$(ILComposeBuildToolingDir)"
