@@ -88,6 +88,11 @@ Therefore, I developed this package as a general-purpose package.
 ILSupport is cumbersome because it requires custom build scripts to be incorporated into the your project.
 However, ILCompose is simply installation the NuGet package and builds everything automatically.
 
+When you install the NuGet package,
+the CIL (*.il) file will have the `ILComposeTargetIL` build action set as follows:
+
+![ILComposeTargetIL](Images/vsproperties.png)
+
 Basically, it can be used in the same way as ILSupport.
 
 ILSupport is realized using ILDasm and a string substitution technique.
