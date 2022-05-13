@@ -108,6 +108,8 @@ See fully sample code:
 * [Basic project](samples/ILCompose.Sample/)
 * [Applied unit test project](samples/ILCompose.UnitTestSample/)
 
+NOTE: These sample codes refer directly to the MSBuild scripts in the solution (e.g., the `<Import>` tag in the csproj file) for debugging ILCompose itself. However, if you only need to use ILCompose, you can simply reference the NuGet package as usual.
+
 ----
 
 ## Background
