@@ -9,9 +9,8 @@
 
 ## What is this?
 
-TODO: WIP now, not completed.
-
 Compose partially implementation both .NET language and IL assembler.
+An improved implementation of the principles of [ILSupport](https://github.com/ins0mniaque/ILSupport).
 
 In sample.cs:
 
@@ -36,14 +35,24 @@ In sample.il:
 }
 ```
 
-These source code compose to one assembly by ILCompose.
+These source code compose into one assembly by ILCompose.
+
+Supported target platforms:
+
+* .NET 6, 5
+* .NET Core 3.1 to 1.0
+* .NET Framework 4.8 to 2.0 (maybe 1.0)
+
+Supported building platforms:
+
+* dotnet SDK 6, 5, 3.1, 2.2 and 2.1
+* .NET Framework 4.8 to 4.6.2
 
 ## Background
 
 This project was created in [IL2C](https://github.com/kekyo/IL2C.git),
 there was a need for IL code management.
-In IL2C, CIL unit test code was synthesized into .NET assemblies using
-[ILSupport](https://github.com/ins0mniaque/ILSupport), but:
+In IL2C, CIL unit test code was synthesized into .NET assemblies using ILSupport, but:
 
 * The portion of [NUnit](https://nunit.org/) that relies on
   [Custom attributes extensions](https://docs.nunit.org/articles/nunit/extending-nunit/Custom-Attributes.html) has
