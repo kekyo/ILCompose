@@ -12,6 +12,7 @@
 
 Compose partially implementation both .NET language and IL assembler.
 An improved implementation of the principles of [ILSupport](https://github.com/ins0mniaque/ILSupport).
+If you are looking for an inline assembler for CIL/MSIL, here is a realistic solution.
 
 In sample.cs:
 
@@ -49,7 +50,7 @@ Semantically, it is similar to the C# partial class definition, but it does this
 
 All CIL assemble source code (*.il) are automatically assembled by official dotnet IL assembler `ILAsm`.
 
-Only you have to do install the NuGet package [ILCompose](https://www.nuget.org/packages/ILCompose).
+Only you have to do install the NuGet package [ILCompose](https://www.nuget.org/packages/ILCompose) and ready to use!
 
 ## Environments
 
@@ -84,8 +85,10 @@ Therefore, I developed this package as a general-purpose package.
 
 ## Note
 
-Basically, it can be used in the same way as ILSupport. NET 6,5, and Core.
-In addition, ILSupport is not officially compatible with .NET 6,5 and Core, but ILCompose supports these platforms.
+ILSupport is cumbersome because it requires custom build scripts to be incorporated into the your project.
+However, ILCompose is simply installation the NuGet package and builds everything automatically.
+
+Basically, it can be used in the same way as ILSupport.
 
 ILSupport is realized using ILDasm and a string substitution technique.
 While ILCompose is realized using cecil, so the internal implementations are completely different.
