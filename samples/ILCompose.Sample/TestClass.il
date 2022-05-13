@@ -24,11 +24,4 @@
         ldc.i4 123
         ret
     }
-    .method public static class [netstandard]System.String TestInCIL(int32 a) cil managed
-    {
-        .maxstack 1
-        ldarga 0
-        callvirt instance class [netstandard]System.String [netstandard]System.Int32::ToString()
-        ret
-    }
 }

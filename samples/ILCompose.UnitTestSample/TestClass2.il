@@ -7,7 +7,7 @@
 //
 /////////////////////////////////////////////////////////////////////////////////////
 
-.class public ILCompose.Sample.TestClass2
+.class public ILCompose.UnitTestSample.TestClass2
     extends [netstandard]System.Object
 {
     .method public static int32 TestInCIL(int32 a, int32 b) cil managed

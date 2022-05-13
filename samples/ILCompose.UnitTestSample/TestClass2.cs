@@ -11,21 +11,13 @@ using System.Runtime.CompilerServices;
 
 using NUnit.Framework;
 
-namespace ILCompose.Sample
+namespace ILCompose.UnitTestSample
 {
     [TestFixture]
-    public class TestClass
+    public class TestClass2
     {
-        [TestCase(1, 2, ExpectedResult = 3)]
+        [TestCase(1, 2, ExpectedResult = -1)]
         [MethodImpl(MethodImplOptions.ForwardRef)]
         public static extern int TestInCIL(int a, int b);
-
-        [TestCase(ExpectedResult = 123)]
-        [MethodImpl(MethodImplOptions.ForwardRef)]
-        public static extern int TestInCIL();
-
-        [TestCase(123, ExpectedResult = "123")]
-        [MethodImpl(MethodImplOptions.ForwardRef)]
-        public static extern string TestInCIL(int a);
     }
 }
