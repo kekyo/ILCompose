@@ -12,18 +12,10 @@ using System.Runtime.CompilerServices;
 
 namespace ILCompose.Sample
 {
-    public class TestClass
+    public class TestClass2
     {
         [Description("This is CIL code")]
         [MethodImpl(MethodImplOptions.ForwardRef)]
         public static extern int TestInCIL(int a, int b);
-
-        [Description("This is CIL overloaded 1")]
-        [MethodImpl(MethodImplOptions.ForwardRef)]
-        public static extern int TestInCIL();
-
-        [Description("This is CIL overloaded 2")]
-        [MethodImpl(MethodImplOptions.ForwardRef)]
-        public static extern string TestInCIL(int a);
     }
 }

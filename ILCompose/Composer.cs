@@ -96,60 +96,61 @@ namespace ILCompose
 
             var jumpFixupTargets = new List<(Instruction instruction, int index)>();
             var switchFixupTargets = new List<(Instruction instruction, int[] indices)>();
+            var dummyInstruction = Instruction.Create(OpCodes.Nop);
+
+            Instruction ReserveForJumpFixup(Instruction ri, Instruction i)
+            {
+                var ni = Instruction.Create(ri.OpCode, dummyInstruction);
+                jumpFixupTargets!.Add((ni, i.Offset));
+                return ni;
+            }
+            Instruction ReserveForSwitchFixup(Instruction ri, Instruction[] si)
+            {
+                var ni = Instruction.Create(ri.OpCode, dummyInstruction);
+                switchFixupTargets!.Add((ni, si.Select(i => i.Offset).ToArray()));
+                return ni;
+            }
+            Instruction CloneCallSite(Instruction ri, CallSite rcs)
+            {
+                var fcs = new CallSite(module.ImportReference(rcs.ReturnType));
+                foreach (var rp in rcs.Parameters)
+                {
+                    var fp = new ParameterDefinition(
+                        module.ImportReference(rp.ParameterType));
+                    fp.Attributes = rp.Attributes;
+                    fp.IsReturnValue = rp.IsReturnValue;
+                    fp.IsOut = rp.IsOut;
+                    fp.IsIn = rp.IsIn;
+                    fp.IsOptional = rp.IsOptional;
+                    fp.IsLcid = rp.IsLcid;
+                    fp.Constant = rp.Constant;
+                    CopyCustomAttributes(fp.CustomAttributes, rp.CustomAttributes);
+                    fcs.Parameters.Add(fp);
+                }
+                return Instruction.Create(ri.OpCode, fcs);
+            }
 
             foreach (var ri in rbody.Instructions)
             {
-                var fi = Instruction.Create(ri.OpCode);
-                if (ri.Operand is { } operand)
+                var fi = ri.Operand switch
                 {
-                    if (operand is FieldReference fr)
-                    {
-                        fi.Operand = module.ImportReference(fr);
-                    }
-                    else if (operand is MethodReference mr)
-                    {
-                        fi.Operand = module.ImportReference(mr);
-                    }
-                    else if (operand is TypeReference tr)
-                    {
-                        fi.Operand = module.ImportReference(tr);
-                    }
-                    else if (operand is VariableReference vr)
-                    {
-                        fi.Operand = rbody.Variables[vr.Index];
-                    }
-                    else if (operand is Instruction i)
-                    {
-                        jumpFixupTargets.Add((fi, i.Offset));
-                    }
-                    else if (operand is Instruction[] si)
-                    {
-                        switchFixupTargets.Add((fi, si.Select(i => i.Offset).ToArray()));
-                    }
-                    else if (operand is CallSite rcs)
-                    {
-                        var fcs = new CallSite(module.ImportReference(rcs.ReturnType));
-                        foreach (var rp in rcs.Parameters)
-                        {
-                            var fp = new ParameterDefinition(
-                                module.ImportReference(rp.ParameterType));
-                            fp.Attributes = rp.Attributes;
-                            fp.IsReturnValue = rp.IsReturnValue;
-                            fp.IsOut = rp.IsOut;
-                            fp.IsIn = rp.IsIn;
-                            fp.IsOptional = rp.IsOptional;
-                            fp.IsLcid = rp.IsLcid;
-                            fp.Constant = rp.Constant;
-                            CopyCustomAttributes(fp.CustomAttributes, rp.CustomAttributes);
-                            fcs.Parameters.Add(fp);
-                        }
-                        fi.Operand = fcs;
-                    }
-                    else
-                    {
-                        fi.Operand = operand;
-                    }
-                }
+                    FieldReference fr => Instruction.Create(ri.OpCode, module.ImportReference(fr)),
+                    MethodReference mr => Instruction.Create(ri.OpCode, module.ImportReference(mr)),
+                    TypeReference tr => Instruction.Create(ri.OpCode, module.ImportReference(tr)),
+                    VariableReference vr => Instruction.Create(ri.OpCode, rbody.Variables[vr.Index]),
+                    ParameterReference pr => Instruction.Create(ri.OpCode, rbody.Method.Parameters[pr.Index]),
+                    Instruction i => ReserveForJumpFixup(ri, i),
+                    Instruction[] si => ReserveForSwitchFixup(ri, si),
+                    CallSite rcs => CloneCallSite(ri, rcs),
+                    byte value => Instruction.Create(ri.OpCode, value),
+                    sbyte value => Instruction.Create(ri.OpCode, value),
+                    int value => Instruction.Create(ri.OpCode, value),
+                    long value => Instruction.Create(ri.OpCode, value),
+                    float value => Instruction.Create(ri.OpCode, value),
+                    double value => Instruction.Create(ri.OpCode, value),
+                    string value => Instruction.Create(ri.OpCode, value),
+                    _ => Instruction.Create(ri.OpCode),
+                };
                 fbody.Instructions.Add(fi);
             }
 

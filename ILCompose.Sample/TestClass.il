@@ -24,4 +24,19 @@
         add
         ret
     }
+    .method public static int32 TestInCIL() cil managed
+    {
+        .maxstack 2
+        ldarg.0
+        ldarg.0
+        add
+        ret
+    }
+    .method public static class [netstandard]System.String TestInCIL(int32 a) cil managed
+    {
+        .maxstack 1
+        ldarga 0
+        callvirt instance class [netstandard]System.String [netstandard]System.Int32::ToString()
+        ret
+    }
 }
