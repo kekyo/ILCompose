@@ -52,7 +52,7 @@ namespace ILCompose
                     Console.Out.WriteLine($"ILCompose [{ThisAssembly.AssemblyVersion}]");
                     Console.Out.WriteLine("  Compose partially implementation both .NET language and IL assembler.");
                     Console.Out.WriteLine("  Copyright (c) Kouji Matsui.");
-                    Console.Out.WriteLine("usage: ilcompose.exe [options] <primary_name> <reference_name> ...");
+                    Console.Out.WriteLine("usage: ilcompose.exe [options] <primary_assembly_path> <reference_assembly_path> ...");
                     options.WriteOptionDescriptions(Console.Out);
                     return 0;
                 }
@@ -64,8 +64,8 @@ namespace ILCompose
 
                 var fullPaths = extra.Select(Path.GetFullPath).ToArray();
 
-                var primaryPath = fullPaths[0];
-                var referencePaths = fullPaths.
+                var primaryAssemblyPath = fullPaths[0];
+                var referenceAssemblyPaths = fullPaths.
                     Skip(1).
                     ToArray();
                 var overallReferenceBasePaths = fullPaths.
@@ -77,7 +77,7 @@ namespace ILCompose
                 var composer = new Composer(
                     logger, overallReferenceBasePaths,
                     (adjustCorLib.Length != 2) ? null : (adjustCorLib[0], adjustCorLib[1]));
-                if (composer.Compose(primaryPath, referencePaths))
+                if (composer.Compose(primaryAssemblyPath, referenceAssemblyPaths))
                 {
                     return 0;
                 }

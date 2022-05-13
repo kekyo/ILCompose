@@ -92,30 +92,22 @@
   <Target Name="ILComposePrepare">
     <PropertyGroup>
       <!-- Maybe `IntermediateAssembly` is only one file. -->
-      <_ILCompose_PrimaryPath>@(IntermediateAssembly->'&quot;%(FullPath)&quot;', ' ')</_ILCompose_PrimaryPath>
-      <_ILCompose_ReferencePaths>@(IntermediateAssembly->'&quot;%(RootDir)%(Directory)%(Filename)_ref%(Extension)&quot;', ' ')</_ILCompose_ReferencePaths>
-      <_ILCompose_ReferencePathOutputs>@(IntermediateAssembly->'&quot;%(RootDir)%(Directory)%(Filename)_ref%(Extension)&quot;', ';')</_ILCompose_ReferencePathOutputs>
+      <_ILCompose_PrimaryAssemblyPath>@(IntermediateAssembly->'%(FullPath)', ';')</_ILCompose_PrimaryAssemblyPath>
+      <_ILCompose_ReferenceAssemblyPath>@(IntermediateAssembly->'%(RootDir)%(Directory)%(Filename)_ref.dll', ';')</_ILCompose_ReferenceAssemblyPath>
     </PropertyGroup>
   </Target>
     
   <Target Name="ILComposeAssembleIL">
     <PropertyGroup>
-      <_ILCompose_ILAsmCommand>&quot;$(_ILCompose_ILAsmCommandPath)&quot; -nologo -quite -debug -pdbfmt=portable -dll -output=$(_ILCompose_ReferencePaths)</_ILCompose_ILAsmCommand>
+      <_ILCompose_ILAsmCommand>&quot;$(_ILCompose_ILAsmCommandPath)&quot; -nologo -quite -debug -pdbfmt=portable -dll -output=&quot;$(_ILCompose_ReferenceAssemblyPath)&quot;</_ILCompose_ILAsmCommand>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Optimize)' == 'true'">
       <_ILCompose_ILAsmCommand>$(_ILCompose_ILAsmCommand) -optimize</_ILCompose_ILAsmCommand>
     </PropertyGroup>
-    <!-- Replace '[netstandard]` to `[mscorlib]` is build target is .NET Framework. -->
-      <!-- TODO: implement in ilcompose
-    <WriteLinesToFile Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'"
-                        File="$(MergedILPath)" Lines="@(ILLines->Replace('[netstandard]','[mscorlib]'))" Overwrite="true" />
-    <WriteLinesToFile Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'"
-                        File="$(MergedILPath)" Lines="@(ILLines->Replace('[mscorlib]','[netstandard]'))" Overwrite="true" />
-        -->
-    <Message Importance="normal" Text="ILCompose: ilasm $(_ILCompose_ReferencePaths)" />
+    <Message Importance="normal" Text="ILCompose: ilasm $(_ILCompose_ReferenceAssemblyPath)" />
     <Exec Command="$(_ILCompose_ILAsmCommand) @(ILComposeReferenceIL->'&quot;%(FullPath)&quot;', ' ')" />
     <ItemGroup>
-      <FileWrites Include="$(_ILCompose_ReferencePathOutputs)" />
+      <FileWrites Include="$(_ILCompose_ReferenceAssemblyPath)" />
     </ItemGroup>
   </Target>
 
@@ -135,9 +127,9 @@
       <_ILCompose_Options>$(_ILCompose_BuildLogLevelOption) $(_ILCompose_LaunchDebuggerOption) $(_ILCompose_CombinedReferenceBasePathOption) $(_ILCompose_AdjustCorLibOption)</_ILCompose_Options>
     </PropertyGroup>
     <Exec WorkingDirectory="$(ILComposeBuildToolingDir)"
-        Command="$(ILComposeBuildToolingRuntimeName)&quot;$(ILComposeBuildToolingPath)&quot; $(_ILCompose_Options) &quot;$(_ILCompose_PrimaryPath)&quot; $(_ILCompose_ReferencePaths)" />
+        Command="$(ILComposeBuildToolingRuntimeName)&quot;$(ILComposeBuildToolingPath)&quot; $(_ILCompose_Options) &quot;$(_ILCompose_PrimaryAssemblyPath)&quot; $(_ILCompose_ReferenceAssemblyPath)" />
     <ItemGroup>
-      <FileWrites Include="$(_ILCompose_PrimaryPath)" />
+      <FileWrites Include="$(_ILCompose_PrimaryAssemblyPath)" />
     </ItemGroup>
   </Target>
 </Project>
