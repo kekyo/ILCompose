@@ -27,6 +27,11 @@
     <_ILCompose_ScriptBaseDir>$(MSBuildThisFileDirectory)</_ILCompose_ScriptBaseDir>
   </PropertyGroup>
 
+  <ItemGroup>
+    <AvailableItemName Include="ILComposeTargetIL"/>
+    <ILComposeTargetIL Include="**/*.il" Exclude="obj/**/*.il;bin/**/*.il" />
+  </ItemGroup>
+
   <!-- ============================================================================= -->
 
   <!-- https://docs.microsoft.com/en-us/visualstudio/msbuild/msbuild-roslyncodetaskfactory?view=vs-2022#provide-backward-compatibility -->

@@ -36,10 +36,6 @@
   <PropertyGroup>
     <_ILCompose_ToolingDir>$([System.IO.Path]::Combine('$(_ILCompose_ScriptBaseDir)','..','tools','$(_ILCompose_PlatformName)'))</_ILCompose_ToolingDir>
   </PropertyGroup>
-
-  <ItemGroup>
-    <ILComposeReferenceIL Include="**/*.il" Exclude="obj/**/*.il;bin/**/*.il" />
-  </ItemGroup>
         
   <!-- ====================================================================== -->
 
@@ -98,7 +94,7 @@
   </Target>
     
   <Target Name="ILComposeAssembleIL"
-    Inputs="@(ILComposeReferenceIL)"
+    Inputs="@(ILComposeTargetIL)"
     Outputs="$(_ILCompose_ReferenceAssemblyPath)">
     <PropertyGroup>
       <_ILCompose_ILAsmCommand>&quot;$(_ILCompose_ILAsmCommandPath)&quot; -nologo -quite -debug -pdbfmt=portable -dll -output=&quot;$(_ILCompose_ReferenceAssemblyPath)&quot;</_ILCompose_ILAsmCommand>
@@ -106,7 +102,7 @@
     <PropertyGroup Condition="'$(Optimize)' == 'true'">
       <_ILCompose_ILAsmCommand>$(_ILCompose_ILAsmCommand) -optimize</_ILCompose_ILAsmCommand>
     </PropertyGroup>
-    <Exec Command="$(_ILCompose_ILAsmCommand) @(ILComposeReferenceIL->'&quot;%(FullPath)&quot;', ' ')" />
+    <Exec Command="$(_ILCompose_ILAsmCommand) @(ILComposeTargetIL->'&quot;%(FullPath)&quot;', ' ')" />
     <Message Importance="normal" Text="ILCompose: CIL source code assembled. Output=$(_ILCompose_ReferenceAssemblyPath)" />
     <ItemGroup>
       <FileWrites Include="$(_ILCompose_ReferenceAssemblyPath)" />
