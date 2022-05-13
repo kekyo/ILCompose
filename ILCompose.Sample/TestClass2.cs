@@ -7,14 +7,16 @@
 //
 /////////////////////////////////////////////////////////////////////////////////////
 
-using System.ComponentModel;
 using System.Runtime.CompilerServices;
+
+using NUnit.Framework;
 
 namespace ILCompose.Sample
 {
+    [TestFixture]
     public class TestClass2
     {
-        [Description("This is CIL code")]
+        [TestCase(1, 2, ExpectedResult = -1)]
         [MethodImpl(MethodImplOptions.ForwardRef)]
         public static extern int TestInCIL(int a, int b);
     }

@@ -7,22 +7,24 @@
 //
 /////////////////////////////////////////////////////////////////////////////////////
 
-using System.ComponentModel;
 using System.Runtime.CompilerServices;
+
+using NUnit.Framework;
 
 namespace ILCompose.Sample
 {
+    [TestFixture]
     public class TestClass
     {
-        [Description("This is CIL code")]
+        [TestCase(1, 2, ExpectedResult = 3)]
         [MethodImpl(MethodImplOptions.ForwardRef)]
         public static extern int TestInCIL(int a, int b);
 
-        [Description("This is CIL overloaded 1")]
+        [TestCase(ExpectedResult = 123)]
         [MethodImpl(MethodImplOptions.ForwardRef)]
         public static extern int TestInCIL();
 
-        [Description("This is CIL overloaded 2")]
+        [TestCase(123, ExpectedResult = "123")]
         [MethodImpl(MethodImplOptions.ForwardRef)]
         public static extern string TestInCIL(int a);
     }

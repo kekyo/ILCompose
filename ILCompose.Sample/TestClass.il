@@ -7,14 +7,8 @@
 //
 /////////////////////////////////////////////////////////////////////////////////////
 
-.assembly extern netstandard as mscorlib
-{
-  .publickeytoken = (B7 7A 5C 56 19 34 E0 89)
-  .ver 2:0:0:0
-}
-
 .class public ILCompose.Sample.TestClass
-    extends System.Object
+    extends [netstandard]System.Object
 {
     .method public static int32 TestInCIL(int32 a, int32 b) cil managed
     {
@@ -27,9 +21,7 @@
     .method public static int32 TestInCIL() cil managed
     {
         .maxstack 2
-        ldarg.0
-        ldarg.0
-        add
+        ldc.i4 123
         ret
     }
     .method public static class [netstandard]System.String TestInCIL(int32 a) cil managed
