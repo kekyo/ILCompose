@@ -203,11 +203,11 @@ namespace ILCompose
             }
         }
 
-        public bool Compose(string primaryPath, string[] referencePaths)
+        public bool Compose(string primaryAssemblyPath, string[] referenceAssemblyPaths)
         {
             var primaryDebuggingPath = Path.Combine(
-                primaryPath,
-                Path.GetFileNameWithoutExtension(primaryPath) + ".pdb");
+                primaryAssemblyPath,
+                Path.GetFileNameWithoutExtension(primaryAssemblyPath) + ".pdb");
 
             // HACK: cecil will lock symbol file when uses defaulted reading method,
             //   (and couldn't replace it manually).
@@ -221,10 +221,10 @@ namespace ILCompose
                 symbolStream.Position = 0;
             }
 
-            this.logger.Information($"Loading primary: \"{primaryPath}\"");
+            this.logger.Information($"Loading primary: \"{primaryAssemblyPath}\"");
 
             using var primaryAssembly = AssemblyDefinition.ReadAssembly(
-                Path.Combine(this.basePath, primaryPath),
+                Path.Combine(this.basePath, primaryAssemblyPath),
                 new ReaderParameters
                 {
                     ReadWrite = false,
@@ -234,7 +234,7 @@ namespace ILCompose
                     SymbolStream = symbolStream,
                 });
 
-            var referenceModules = referencePaths.
+            var referenceModules = referenceAssemblyPaths.
                 Select(referencePath =>
                 {
                     this.logger.Information($"Loading reference: \"{referencePath}\"");
@@ -253,14 +253,14 @@ namespace ILCompose
             //////////////////////////////////////////////////////////////////////
             // Step 1. Extract forwardref methods from overall primary.
 
-            var forwardrefMethods = primaryAssembly.Modules.
+            var primaryMethods = primaryAssembly.Modules.
                 SelectMany(m => m.Types).
                 SelectMany(t => t.Methods).
                 Where(m => (m.ImplAttributes & MethodImplAttributes.ForwardRef) == MethodImplAttributes.ForwardRef).
                 ToArray();
-            this.logger.Trace($"Target forwardrefs: {forwardrefMethods.Length}");
+            this.logger.Trace($"Target forwardrefs: {primaryMethods.Length}");
 
-            if (forwardrefMethods.Length == 0)
+            if (primaryMethods.Length == 0)
             {
                 this.logger.Information($"Could not any forwardref methods.");
                 return true;
@@ -279,7 +279,7 @@ namespace ILCompose
             // Step 3. Compose
 
             var composed = 0;
-            foreach (var forwardrefMethod in forwardrefMethods)
+            foreach (var forwardrefMethod in primaryMethods)
             {
                 var fullName = forwardrefMethod.FullName;
                 if (referenceMethods.TryGetValue(fullName, out var referenceMethod))
@@ -300,19 +300,19 @@ namespace ILCompose
             //////////////////////////////////////////////////////////////////////
             // Step 4. Finish
 
-            if (composed == forwardrefMethods.Length)
+            if (composed == primaryMethods.Length)
             {
-                var targetBasePath = Path.GetDirectoryName(primaryPath) ?? ".";
+                var targetBasePath = Path.GetDirectoryName(primaryAssemblyPath) ?? ".";
 
                 // Backup original assembly and symbol files,
                 // because cecil will fail when contains invalid metadata.
                 var backupAssemblyPath = Path.Combine(
                     targetBasePath,
-                    Path.GetFileNameWithoutExtension(primaryPath) + "_backup" +
-                        Path.GetExtension(primaryPath));
+                    Path.GetFileNameWithoutExtension(primaryAssemblyPath) + "_backup" +
+                        Path.GetExtension(primaryAssemblyPath));
                 var backupDebuggingPath = Path.Combine(
                     targetBasePath,
-                    Path.GetFileNameWithoutExtension(primaryPath) + "_backup.pdb");
+                    Path.GetFileNameWithoutExtension(primaryAssemblyPath) + "_backup.pdb");
 
                 if (File.Exists(backupAssemblyPath))
                 {
@@ -323,9 +323,9 @@ namespace ILCompose
                     File.Delete(backupDebuggingPath);
                 }
 
-                if (File.Exists(primaryPath))
+                if (File.Exists(primaryAssemblyPath))
                 {
-                    File.Move(primaryPath, backupAssemblyPath);
+                    File.Move(primaryAssemblyPath, backupAssemblyPath);
                 }
                 try
                 {
@@ -337,7 +337,7 @@ namespace ILCompose
                     {
                         // Write injected assembly and symbol file.
                         primaryAssembly.Write(
-                            primaryPath,
+                            primaryAssemblyPath,
                             new WriterParameters
                             {
                                 SymbolWriterProvider = new PortablePdbWriterProvider(),
@@ -362,13 +362,13 @@ namespace ILCompose
                 // Failed:
                 catch
                 {
-                    if (File.Exists(primaryPath))
+                    if (File.Exists(primaryAssemblyPath))
                     {
-                        File.Delete(primaryPath);
+                        File.Delete(primaryAssemblyPath);
                     }
                     if (File.Exists(backupAssemblyPath))
                     {
-                        File.Move(backupAssemblyPath, primaryPath);
+                        File.Move(backupAssemblyPath, primaryAssemblyPath);
                     }
                     throw;
                 }
@@ -383,7 +383,7 @@ namespace ILCompose
                     File.Delete(backupDebuggingPath);
                 }
 
-                this.logger.Information($"Assembly composed: Path={primaryPath}, Methods={composed}");
+                this.logger.Information($"Assembly composed: Path={primaryAssemblyPath}, Methods={composed}");
 
                 return true;
             }

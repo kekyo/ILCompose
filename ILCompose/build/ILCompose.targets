@@ -97,21 +97,25 @@
     </PropertyGroup>
   </Target>
     
-  <Target Name="ILComposeAssembleIL">
+  <Target Name="ILComposeAssembleIL"
+    Inputs="@(ILComposeReferenceIL)"
+    Outputs="$(_ILCompose_ReferenceAssemblyPath)">
     <PropertyGroup>
       <_ILCompose_ILAsmCommand>&quot;$(_ILCompose_ILAsmCommandPath)&quot; -nologo -quite -debug -pdbfmt=portable -dll -output=&quot;$(_ILCompose_ReferenceAssemblyPath)&quot;</_ILCompose_ILAsmCommand>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Optimize)' == 'true'">
       <_ILCompose_ILAsmCommand>$(_ILCompose_ILAsmCommand) -optimize</_ILCompose_ILAsmCommand>
     </PropertyGroup>
-    <Message Importance="normal" Text="ILCompose: ilasm $(_ILCompose_ReferenceAssemblyPath)" />
     <Exec Command="$(_ILCompose_ILAsmCommand) @(ILComposeReferenceIL->'&quot;%(FullPath)&quot;', ' ')" />
+    <Message Importance="normal" Text="ILCompose: CIL source code assembled. Output=$(_ILCompose_ReferenceAssemblyPath)" />
     <ItemGroup>
       <FileWrites Include="$(_ILCompose_ReferenceAssemblyPath)" />
     </ItemGroup>
   </Target>
 
-  <Target Name="ILComposeBuild">
+  <Target Name="ILComposeBuild"
+    Inputs="$(_ILCompose_PrimaryAssemblyPath);$(_ILCompose_ReferenceAssemblyPath)"
+    Outputs="$(_ILCompose_PrimaryAssemblyPath)">
     <_ILCompose_GetCombinedReferencesBasePath References="@(ReferencePath)">
       <Output TaskParameter="CombinedReferencesBasePath" PropertyName="_ILCompose_CombinedReferencesBasePath" />
     </_ILCompose_GetCombinedReferencesBasePath>
