@@ -14,8 +14,5 @@
   <PropertyGroup>
     <ILComposeBuildToolingDir>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\ILCompose\bin\$(Configuration)\$(_ILCompose_PlatformName)'))</ILComposeBuildToolingDir>
   </PropertyGroup>
-  <ItemGroup>
-    <None Remove="TestClass2.il" />
-  </ItemGroup>
 
 </Project>

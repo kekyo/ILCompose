@@ -29,6 +29,7 @@
 
   <ItemGroup>
     <AvailableItemName Include="ILComposeTargetIL"/>
+    <None Remove="**/*.il" />
     <ILComposeTargetIL Include="**/*.il" Exclude="obj/**/*.il;bin/**/*.il" />
   </ItemGroup>
 
