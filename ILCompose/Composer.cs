@@ -96,18 +96,22 @@ namespace ILCompose
 
             var jumpFixupTargets = new List<(Instruction instruction, int index)>();
             var switchFixupTargets = new List<(Instruction instruction, int[] indices)>();
+            var lookupIndexFromOffset = rbody.Instructions.
+                Select((ri, index) => (ri, index)).
+                ToDictionary(entry => entry.ri.Offset, entry => entry.index);
+
             var dummyInstruction = Instruction.Create(OpCodes.Nop);
 
             Instruction ReserveForJumpFixup(Instruction ri, Instruction i)
             {
                 var ni = Instruction.Create(ri.OpCode, dummyInstruction);
-                jumpFixupTargets!.Add((ni, i.Offset));
+                jumpFixupTargets!.Add((ni, lookupIndexFromOffset[i.Offset]));
                 return ni;
             }
             Instruction ReserveForSwitchFixup(Instruction ri, Instruction[] si)
             {
                 var ni = Instruction.Create(ri.OpCode, dummyInstruction);
-                switchFixupTargets!.Add((ni, si.Select(i => i.Offset).ToArray()));
+                switchFixupTargets!.Add((ni, si.Select(i => lookupIndexFromOffset[i.Offset]).ToArray()));
                 return ni;
             }
             Instruction CloneCallSite(Instruction ri, CallSite rcs)
@@ -194,7 +198,8 @@ namespace ILCompose
                     this.cachedDocuments.Add(rd, fd);
                 }
 
-                var fsp = new SequencePoint(rbody.Instructions[rsp.Offset], fd);
+                var fsp = new SequencePoint(
+                    rbody.Instructions[lookupIndexFromOffset[rsp.Offset]], fd);
                 fsp.StartLine = rsp.StartLine;
                 fsp.StartColumn = rsp.StartColumn;
                 fsp.EndLine = rsp.EndLine;
