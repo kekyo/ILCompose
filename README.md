@@ -57,7 +57,8 @@ Only you have to do install the NuGet package [ILCompose](https://www.nuget.org/
 Supported target platforms:
 
 * .NET 6, 5
-* .NET Core 3.1 to 1.0
+* .NET Core 3.1 to 2.0 (maybe to 1.0)
+* .NET Standard 2.1, 2.0 (maybe to 1.0)
 * .NET Framework 4.8 to 2.0 (maybe to 1.0)
 
 Supported building platforms:
@@ -67,23 +68,7 @@ Supported building platforms:
 
 ----
 
-## Background
-
-This project was created in [IL2C](https://github.com/kekyo/IL2C.git),
-there was a need for IL code management.
-In IL2C, CIL unit test code was synthesized into .NET assemblies using ILSupport, but:
-
-* The portion of [NUnit](https://nunit.org/) that relies on
-  [Custom attributes extensions](https://docs.nunit.org/articles/nunit/extending-nunit/Custom-Attributes.html) has
-  caused problems on the JetBrains Rider's test explorer, and I wanted to eliminate this.
-* To solve the above, needed to resolve a problem with custom attributes being removed
-  by the `forwardref` attribute in ILSupport.
-
-Related: [IL2C issue #100: Will upgrade basis environments.](https://github.com/kekyo/IL2C/issues/100)
-
-Therefore, I developed this package as a general-purpose package.
-
-## Note
+## How to use
 
 ILSupport is cumbersome because it requires custom build scripts to be incorporated into the your project.
 However, ILCompose is simply installation the NuGet package and builds everything automatically.
@@ -117,6 +102,29 @@ It allows you to apply custom attributes normally, as shown below:
 [MethodImpl(MethodImplOptions.ForwardRef)]
 public static extern void ValueTypeTest();
 ```
+
+See fully sample code:
+
+* [Basic project](samples/ILCompose.Sample/)
+* [Applied unit test project](samples/ILCompose.UnitTestSample/)
+
+----
+
+## Background
+
+This project was created in [IL2C](https://github.com/kekyo/IL2C.git),
+there was a need for IL code management.
+In IL2C, CIL unit test code was synthesized into .NET assemblies using ILSupport, but:
+
+* The portion of [NUnit](https://nunit.org/) that relies on
+  [Custom attributes extensions](https://docs.nunit.org/articles/nunit/extending-nunit/Custom-Attributes.html) has
+  caused problems on the JetBrains Rider's test explorer, and I wanted to eliminate this.
+* To solve the above, needed to resolve a problem with custom attributes being removed
+  by the `forwardref` attribute in ILSupport.
+
+Related: [IL2C issue #100: Will upgrade basis environments.](https://github.com/kekyo/IL2C/issues/100)
+
+Therefore, I developed this package as a general-purpose package.
 
 ----
 
