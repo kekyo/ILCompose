@@ -111,7 +111,8 @@
 
   <Target Name="ILComposeBuild"
     Inputs="$(_ILCompose_PrimaryAssemblyPath);$(_ILCompose_ReferenceAssemblyPath)"
-    Outputs="$(_ILCompose_PrimaryAssemblyPath)">
+    Outputs="$(_ILCompose_PrimaryAssemblyPath)"
+    Condition="Exists('$(_ILCompose_ReferenceAssemblyPath)')">
     <_ILCompose_GetCombinedReferencesBasePath References="@(ReferencePath)">
       <Output TaskParameter="CombinedReferencesBasePath" PropertyName="_ILCompose_CombinedReferencesBasePath" />
     </_ILCompose_GetCombinedReferencesBasePath>
