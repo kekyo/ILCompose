@@ -26,6 +26,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ILCompose.UnitTestSample", 
 		{3CC9877D-4841-45A8-BA68-C1A8ACEF941E} = {3CC9877D-4841-45A8-BA68-C1A8ACEF941E}
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{567026BC-F7C0-4153-B813-A49EACAF49FD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{084B7311-2E72-41C8-AB56-91E87DDE3FA8}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\build.yaml = .github\workflows\build.yaml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +58,8 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{2279AC04-F92B-439E-BDFD-2F4B3C426BFD} = {BCF44A03-9336-46A9-9BD5-8490079E460E}
 		{AFAA852B-1440-4012-98F5-1D68B7E85198} = {BCF44A03-9336-46A9-9BD5-8490079E460E}
+		{567026BC-F7C0-4153-B813-A49EACAF49FD} = {A98B9312-AA45-44F9-A9AD-07D46F8E34EC}
+		{084B7311-2E72-41C8-AB56-91E87DDE3FA8} = {567026BC-F7C0-4153-B813-A49EACAF49FD}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {99F94A06-9A6D-44E7-9DEB-4A534989D7D8}
