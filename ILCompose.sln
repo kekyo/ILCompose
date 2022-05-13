@@ -17,8 +17,14 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{BCF44A03-9336-46A9-9BD5-8490079E460E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ILCompose.Sample", "samples\ILCompose.Sample\ILCompose.Sample.csproj", "{2279AC04-F92B-439E-BDFD-2F4B3C426BFD}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3CC9877D-4841-45A8-BA68-C1A8ACEF941E} = {3CC9877D-4841-45A8-BA68-C1A8ACEF941E}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ILCompose.UnitTestSample", "samples\ILCompose.UnitTestSample\ILCompose.UnitTestSample.csproj", "{AFAA852B-1440-4012-98F5-1D68B7E85198}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3CC9877D-4841-45A8-BA68-C1A8ACEF941E} = {3CC9877D-4841-45A8-BA68-C1A8ACEF941E}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
