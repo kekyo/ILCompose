@@ -49,7 +49,7 @@ Semantically, it is similar to the C# partial class definition, but it does this
 
 All CIL assemble source code (*.il) are automatically assembled by official dotnet IL assembler `ILAsm`.
 
-Only you have to do is install the NuGet package [ILCompose](https://www.nuget.org/packages/ILCompose).
+Only you have to do install the NuGet package [ILCompose](https://www.nuget.org/packages/ILCompose).
 
 ## Environments
 
@@ -57,7 +57,7 @@ Supported target platforms:
 
 * .NET 6, 5
 * .NET Core 3.1 to 1.0
-* .NET Framework 4.8 to 2.0 (maybe 1.0)
+* .NET Framework 4.8 to 2.0 (maybe to 1.0)
 
 Supported building platforms:
 
@@ -77,6 +77,8 @@ In IL2C, CIL unit test code was synthesized into .NET assemblies using ILSupport
   caused problems on the JetBrains Rider's test explorer, and I wanted to eliminate this.
 * To solve the above, needed to resolve a problem with custom attributes being removed
   by the `forwardref` attribute in ILSupport.
+
+Related: [IL2C issue #100: Will upgrade basis environments.](https://github.com/kekyo/IL2C/issues/100)
 
 Therefore, I developed this package as a general-purpose package.
 
