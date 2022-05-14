@@ -21,8 +21,13 @@ namespace ILCompose
         public ReferenceImporter(ModuleDefinition module) =>
             this.module = module;
 
-        public void RegisterForward(TypeReference type) =>
-            typeForwards.Add(type.FullName, type);
+        public void RegisterForward(TypeReference type)
+        {
+            if (!typeForwards.ContainsKey(type.Name))
+            {
+                typeForwards.Add(type.FullName, type);
+            }
+        }
 
         public TypeReference Import(TypeReference type) =>
             this.module.ImportReference(

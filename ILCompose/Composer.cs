@@ -292,16 +292,13 @@ namespace ILCompose
             var importer = new ReferenceImporter(primaryAssembly.MainModule);
             if (this.adjustAssemblyReferences)
             {
-                foreach (var anr in primaryAssembly.Modules.
-                    SelectMany(m => m.AssemblyReferences))
+                foreach (var type in primaryAssembly.Modules.
+                    SelectMany(m => m.AssemblyReferences).
+                    SelectMany(anr => this.assemblyResolver.Resolve(anr).Modules).
+                    SelectMany(m => m.Types).
+                    Where(t => (t.IsPublic || t.IsNestedPublic) && t.BaseType != null))
                 {
-                    var assembly = this.assemblyResolver.Resolve(anr);
-                    foreach (var type in assembly.Modules.
-                        SelectMany(m => m.Types).
-                        Where(t => (t.IsPublic || t.IsNestedPublic) && t.BaseType != null))
-                    {
-                        importer.RegisterForward(type);
-                    }
+                    importer.RegisterForward(type);
                 }
             }
 
