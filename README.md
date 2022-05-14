@@ -123,25 +123,27 @@ It allows you to apply custom attributes normally, as shown below:
 public static extern void ValueTypeTest();
 ```
 
-### Automatic retargetting corlib references.
+### Automatic adjusting assembly references.
 
-When assembling your loose IL source code except assembly reference declarations,
+When assembling your loose IL source code with implicit referenced assemblies,
 `ILAsm` will cause these warnings below:
 
 ```
 warning : Reference to undeclared extern assembly 'netstandard'. Attempting autodetect
 warning : Reference to undeclared extern assembly 'System.Runtime'. Attempting autodetect
 warning : Reference to undeclared extern assembly 'mscorlib'. Attempting autodetect
+
+...
 ```
 
 See also: [dotnet/runtime: ilasm cannot compile against different corlib names](https://github.com/dotnet/runtime/issues/7758)
 
 ILCompose has no control these warning on `ILAsm`,
 but ILCompose will resolve these inconsistent references in the final composite assembly.
-Finally, the primary assembly (the original output assembly of the project) is aggregated into the corlib referenced.
+Finally, the primary assembly (the original output assembly of the project) is aggregated into referenced assemblies.
 For example, `mscorlib.dll` for `net48` and `System.Runtime.dll` for `net6.0`.
 
-This feature is disabled `<ILComposeAdjustCorLib>false</ILComposeAdjustCorLib>` in `<PropertyGroup>` element.
+This feature is disabled `<ILComposeAdjustAssemblyReferences>false</ILComposeAdjustAssemblyReferences>` in `<PropertyGroup>` element.
 
 ----
 

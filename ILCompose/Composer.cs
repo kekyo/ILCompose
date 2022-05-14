@@ -22,16 +22,16 @@ namespace ILCompose
     {
         private readonly ILogger logger;
         private readonly string basePath;
-        private readonly bool adjustCorlib;
+        private readonly bool adjustAssemblyReferences;
         private readonly DefaultAssemblyResolver assemblyResolver = new();
         private readonly Dictionary<Document, Document> cachedDocuments = new();
 
         public Composer(
-            ILogger logger, string[] referenceBasePaths, bool adjustCorlib)
+            ILogger logger, string[] referenceBasePaths, bool adjustAssemblyReferences)
         {
             this.logger = logger;
             this.basePath = referenceBasePaths[0];
-            this.adjustCorlib = adjustCorlib;
+            this.adjustAssemblyReferences = adjustAssemblyReferences;
 
             foreach (var referenceBasePath in referenceBasePaths)
             {
@@ -290,34 +290,18 @@ namespace ILCompose
             // Step 3. Compose
 
             var importer = new ReferenceImporter(primaryAssembly.MainModule);
-            if (this.adjustCorlib)
+            if (this.adjustAssemblyReferences)
             {
-                if (primaryAssembly.MainModule.TypeSystem.CoreLibrary is AssemblyNameReference anr)
+                foreach (var anr in primaryAssembly.Modules.
+                    SelectMany(m => m.AssemblyReferences))
                 {
-                    var corLibAsssembly = this.assemblyResolver.Resolve(anr);
-                    foreach (var type in corLibAsssembly.MainModule.Types)
+                    var assembly = this.assemblyResolver.Resolve(anr);
+                    foreach (var type in assembly.Modules.
+                        SelectMany(m => m.Types).
+                        Where(t => (t.IsPublic || t.IsNestedPublic) && t.BaseType != null))
                     {
                         importer.RegisterForward(type);
                     }
-                }
-                else
-                {
-                    var types = primaryAssembly.MainModule.TypeSystem;
-                    importer.RegisterForward(types.Object);
-                    importer.RegisterForward(types.Byte);
-                    importer.RegisterForward(types.SByte);
-                    importer.RegisterForward(types.Int16);
-                    importer.RegisterForward(types.UInt16);
-                    importer.RegisterForward(types.Int32);
-                    importer.RegisterForward(types.UInt32);
-                    importer.RegisterForward(types.Int64);
-                    importer.RegisterForward(types.UInt64);
-                    importer.RegisterForward(types.Single);
-                    importer.RegisterForward(types.Double);
-                    importer.RegisterForward(types.Boolean);
-                    importer.RegisterForward(types.Char);
-                    importer.RegisterForward(types.String);
-                    importer.RegisterForward(types.Void);
                 }
             }
 

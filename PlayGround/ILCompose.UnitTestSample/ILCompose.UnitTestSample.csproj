@@ -9,7 +9,7 @@
     <DebugType>portable</DebugType>
     <Deterministic>true</Deterministic>
 
-    <ILComposeAdjustCorLib>true</ILComposeAdjustCorLib>
+    <ILComposeAdjustAssemblyReferences>true</ILComposeAdjustAssemblyReferences>
     <ILComposeLaunchDebugger Condition="'$(Configuration)' == 'Debug'">false</ILComposeLaunchDebugger>
   </PropertyGroup>
 

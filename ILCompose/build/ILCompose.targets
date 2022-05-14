@@ -14,7 +14,7 @@
     
   <PropertyGroup>
     <ILComposeBuildEnable Condition="'$(ILComposeBuildEnable)' == ''">True</ILComposeBuildEnable>
-    <ILComposeAdjustCorLib Condition="'$(ILComposeAdjustCorLib)' == ''">True</ILComposeAdjustCorLib>
+    <ILComposeAdjustAssemblyReferences Condition="'$(ILComposeAdjustAssemblyReferences)' == ''">True</ILComposeAdjustAssemblyReferences>
     <ILComposeBuildLogLevel Condition="'$(ILComposeBuildLogLevel)' == ''">Information</ILComposeBuildLogLevel>
     <ILComposeLaunchDebugger Condition="'$(ILComposeLaunchDebugger)' == ''">false</ILComposeLaunchDebugger>
   </PropertyGroup>
@@ -123,10 +123,10 @@
       <ILComposeBuildToolingDir Condition="'$(ILComposeBuildToolingDir)' == ''">$([System.IO.Path]::GetFullPath('$(_ILCompose_ToolingDir)'))</ILComposeBuildToolingDir>
       <ILComposeBuildToolingPath Condition="'$(ILComposeBuildToolingPath)' == ''">$([System.IO.Path]::Combine('$(ILComposeBuildToolingDir)','$(_ILCompose_ExecutableName)'))</ILComposeBuildToolingPath>
       <_ILCompose_CombinedReferenceBasePathOption>--refs=&quot;$(_ILCompose_CombinedReferencesBasePath)&quot;</_ILCompose_CombinedReferenceBasePathOption>
-      <_ILCompose_AdjustCorLibOption Condition="$(ILComposeAdjustCorLib)">--adjustCorLib</_ILCompose_AdjustCorLibOption>
+      <_ILCompose_AdjustAssemblyReferencesOption Condition="$(ILComposeAdjustAssemblyReferences)">--adjustAssemblyRefs</_ILCompose_AdjustAssemblyReferencesOption>
       <_ILCompose_BuildLogLevelOption>--logLevel=$(ILComposeBuildLogLevel) --logtfm=&quot;$(TargetFramework)&quot;</_ILCompose_BuildLogLevelOption>
       <_ILCompose_LaunchDebuggerOption Condition="$(ILComposeLaunchDebugger)">--launchDebugger</_ILCompose_LaunchDebuggerOption>
-      <_ILCompose_Options>$(_ILCompose_BuildLogLevelOption) $(_ILCompose_LaunchDebuggerOption) $(_ILCompose_CombinedReferenceBasePathOption) $(_ILCompose_AdjustCorLibOption)</_ILCompose_Options>
+      <_ILCompose_Options>$(_ILCompose_BuildLogLevelOption) $(_ILCompose_LaunchDebuggerOption) $(_ILCompose_CombinedReferenceBasePathOption) $(_ILCompose_AdjustAssemblyReferencesOption)</_ILCompose_Options>
     </PropertyGroup>
     <Exec WorkingDirectory="$(ILComposeBuildToolingDir)"
         Command="$(ILComposeBuildToolingRuntimeName)&quot;$(ILComposeBuildToolingPath)&quot; $(_ILCompose_Options) &quot;$(_ILCompose_PrimaryAssemblyPath)&quot; $(_ILCompose_ReferenceAssemblyPath)" />
