@@ -13,6 +13,7 @@ using System.Linq;
 
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using Mono.Cecil.Pdb;
 using Mono.Collections.Generic;
 
 namespace ILCompose
@@ -220,6 +221,8 @@ namespace ILCompose
             MemoryStream? symbolStream = null;
             if (File.Exists(primaryDebuggingPath))
             {
+                this.logger.Trace($"Loading primary pdb: \"{primaryDebuggingPath}\"");
+
                 using var pdbStream = new FileStream(
                     primaryDebuggingPath, FileMode.Open, FileAccess.Read, FileShare.None);
                 symbolStream = new MemoryStream();
@@ -236,7 +239,8 @@ namespace ILCompose
                     ReadWrite = false,
                     InMemory = true,
                     AssemblyResolver = this.assemblyResolver,
-                    ReadSymbols = symbolStream != null,
+                    SymbolReaderProvider = new PdbReaderProvider(),
+                    ReadSymbols = true,
                     SymbolStream = symbolStream,
                 });
 
@@ -251,6 +255,7 @@ namespace ILCompose
                             ReadWrite = false,
                             InMemory = true,
                             AssemblyResolver = this.assemblyResolver,
+                            SymbolReaderProvider = new PdbReaderProvider(),
                             ReadSymbols = true,
                         });
                 }).
@@ -378,9 +383,8 @@ namespace ILCompose
                             primaryAssemblyPath,
                             new WriterParameters
                             {
-                                SymbolWriterProvider = new PortablePdbWriterProvider(),
+                                SymbolWriterProvider = new PdbWriterProvider(),
                                 WriteSymbols = true,
-                                DeterministicMvid = true,
                             });
                     }
                     // Failed:

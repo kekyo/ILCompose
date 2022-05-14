@@ -145,6 +145,13 @@ This feature is disabled `<ILComposeAdjustCorLib>false</ILComposeAdjustCorLib>` 
 
 ----
 
+## Limitation
+
+* `<DebugType>` `embedded` is not supported.
+
+
+----
+
 ## Background
 
 This project was created in [IL2C](https://github.com/kekyo/IL2C.git),
