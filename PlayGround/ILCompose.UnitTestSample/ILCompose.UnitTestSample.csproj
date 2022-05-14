@@ -1,16 +1,24 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <Import Project="..\..\ILCompose\build\ILCompose.props" />
+
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
+
+    <ILComposeLaunchDebugger>false</ILComposeLaunchDebugger>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ILCompose" Version="*" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.2.0" />
     <PackageReference Include="NUnit" Version="3.13.3" />
     <packagereference Include="NUnit3TestAdapter" Version="4.2.1" PrivateAssets="All" />
   </ItemGroup>
+
+  <Import Project="..\..\ILCompose\build\ILCompose.targets" />
+  <PropertyGroup>
+    <ILComposeBuildToolingDir>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\ILCompose\bin\$(Configuration)\$(_ILCompose_PlatformName)'))</ILComposeBuildToolingDir>
+  </PropertyGroup>
 
 </Project>

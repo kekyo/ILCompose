@@ -52,6 +52,8 @@ All CIL assemble source code (*.il) are automatically assembled by official dotn
 
 Only you have to do install the NuGet package [ILCompose](https://www.nuget.org/packages/ILCompose) and ready to use!
 
+----
+
 ## Environments
 
 Supported target platforms:
@@ -63,12 +65,30 @@ Supported target platforms:
 
 Supported building platforms:
 
-* dotnet SDK 6, 5, 3.1, 2.2 and 2.1
-* .NET Framework 4.8 to 4.6.2
+* dotnet SDK 6, 5, 3.1, 2.2 and 2.1 (on Windows and Linux)
+* .NET Framework 4.8 to 4.6.2 on Windows (With dotnet SDK installation)
 
 ----
 
 ## How to use
+
+In short example:
+
+```bash
+$ dotnet new console
+$ dotnet add package ILCompose
+
+[Then write your code both *.cs and *.il ...]
+```
+
+See fully sample code:
+
+* [Basic project](samples/ILCompose.Sample/)
+* [Applied unit test project](samples/ILCompose.UnitTestSample/)
+
+----
+
+## Insight
 
 ILSupport is cumbersome because it requires custom build scripts to be incorporated into the your project.
 However, ILCompose is simply installation the NuGet package and builds everything automatically.
@@ -103,20 +123,6 @@ It allows you to apply custom attributes normally, as shown below:
 public static extern void ValueTypeTest();
 ```
 
-See fully sample code:
-
-* [Basic project](samples/ILCompose.Sample/)
-* [Applied unit test project](samples/ILCompose.UnitTestSample/)
-
-NOTE: These sample codes refer directly to the MSBuild scripts in the solution (e.g., the `<Import>` tag in the csproj file) for debugging ILCompose itself. However, if you only need to use ILCompose, you can simply reference the NuGet package as usual. As per general procedure:
-
-```bash
-$ dotnet new console
-$ dotnet add package ILCompose
-
-<Then write your code both *.cs and *.il ...>
-```
-
 ----
 
 ## Background
@@ -127,9 +133,10 @@ In IL2C, CIL unit test code was synthesized into .NET assemblies using ILSupport
 
 * The portion of [NUnit](https://nunit.org/) that relies on
   [Custom attributes extensions](https://docs.nunit.org/articles/nunit/extending-nunit/Custom-Attributes.html) has
-  caused problems on the JetBrains Rider's test explorer, and I wanted to eliminate this.
-* To solve the above, needed to resolve a problem with custom attributes being removed
+  caused problems on the JetBrains Rider's test explorer, and I wanted to eliminate this. I was thinking of stopping the use of custom attributes extensions.
+* In that case, needed to resolve a problem with custom attributes being removed
   by the `forwardref` attribute in ILSupport.
+* To begin with, the ILSupport script was being used with considerable modifications, which caused maintainability problems.
 
 Related: [IL2C issue #100: Will upgrade basis environments.](https://github.com/kekyo/IL2C/issues/100)
 

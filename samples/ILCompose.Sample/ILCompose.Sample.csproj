@@ -1,18 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\..\ILCompose\build\ILCompose.props" />
-
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
-
-    <ILComposeLaunchDebugger>false</ILComposeLaunchDebugger>
   </PropertyGroup>
 
-  <Import Project="..\..\ILCompose\build\ILCompose.targets" />
-  <PropertyGroup>
-    <ILComposeBuildToolingDir>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\ILCompose\bin\$(Configuration)\$(_ILCompose_PlatformName)'))</ILComposeBuildToolingDir>
-  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="ILCompose" Version="*" />
+  </ItemGroup>
 
 </Project>
