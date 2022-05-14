@@ -8,7 +8,7 @@
 /////////////////////////////////////////////////////////////////////////////////////
 
 .class public ILCompose.UnitTestSample.TestClass
-    extends [System.Runtime]System.Object
+    extends [netstandard]System.Object
 {
     .method public static int32 TestInCIL(int32 a, int32 b) cil managed
     {
@@ -24,11 +24,11 @@
         ldc.i4 123
         ret
     }
-    .method public static class [System.Runtime]System.String TestInCIL(int32 a) cil managed
+    .method public static class [netstandard]System.String TestInCIL(int32 a) cil managed
     {
         .maxstack 1
         ldarga 0
-        callvirt instance class [System.Runtime]System.String [System.Runtime]System.Int32::ToString()
+        callvirt instance class [netstandard]System.String [netstandard]System.Int32::ToString()
         ret
     }
 }

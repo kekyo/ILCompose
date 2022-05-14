@@ -21,13 +21,12 @@ namespace ILCompose
     {
         private readonly ILogger logger;
         private readonly string basePath;
-        private readonly (string from, string to)? adjustCorlib;
+        private readonly bool adjustCorlib;
         private readonly DefaultAssemblyResolver assemblyResolver = new();
         private readonly Dictionary<Document, Document> cachedDocuments = new();
 
         public Composer(
-            ILogger logger, string[] referenceBasePaths,
-            (string from, string to)? adjustCorlib)
+            ILogger logger, string[] referenceBasePaths, bool adjustCorlib)
         {
             this.logger = logger;
             this.basePath = referenceBasePaths[0];
@@ -41,10 +40,11 @@ namespace ILCompose
         }
 
         private void ComposeMethod(
-            ModuleDefinition module,
             MethodReference forwardrefMethod,
-            MethodReference referenceMethod)
+            MethodReference referenceMethod,
+            ReferenceImporter importer)
         {
+
             var fm = forwardrefMethod.Resolve();
             var rm = referenceMethod.Resolve();
 
@@ -60,11 +60,11 @@ namespace ILCompose
             {
                 foreach (var fc in from)
                 {
-                    var tc = new CustomAttribute(module.ImportReference(fc.Constructor));
+                    var tc = new CustomAttribute(importer.Import(fc.Constructor));
 
                     CustomAttributeArgument CloneArgument(CustomAttributeArgument caa) =>
                         new CustomAttributeArgument(
-                            module.ImportReference(caa.Type), caa.Value);
+                            importer.Import(caa.Type), caa.Value);
 
                     foreach (var fca in fc.ConstructorArguments)
                     {
@@ -90,7 +90,7 @@ namespace ILCompose
 
             foreach (var rv in rbody.Variables)
             {
-                var fv = new VariableDefinition(module.ImportReference(rv.VariableType));
+                var fv = new VariableDefinition(importer.Import(rv.VariableType));
                 fbody.Variables.Add(fv);
             }
 
@@ -116,11 +116,11 @@ namespace ILCompose
             }
             Instruction CloneCallSite(Instruction ri, CallSite rcs)
             {
-                var fcs = new CallSite(module.ImportReference(rcs.ReturnType));
+                var fcs = new CallSite(importer.Import(rcs.ReturnType));
                 foreach (var rp in rcs.Parameters)
                 {
                     var fp = new ParameterDefinition(
-                        module.ImportReference(rp.ParameterType));
+                        importer.Import(rp.ParameterType));
                     fp.Attributes = rp.Attributes;
                     fp.IsReturnValue = rp.IsReturnValue;
                     fp.IsOut = rp.IsOut;
@@ -138,9 +138,9 @@ namespace ILCompose
             {
                 var fi = ri.Operand switch
                 {
-                    FieldReference fr => Instruction.Create(ri.OpCode, module.ImportReference(fr)),
-                    MethodReference mr => Instruction.Create(ri.OpCode, module.ImportReference(mr)),
-                    TypeReference tr => Instruction.Create(ri.OpCode, module.ImportReference(tr)),
+                    FieldReference fr => Instruction.Create(ri.OpCode, importer.Import(fr)),
+                    MethodReference mr => Instruction.Create(ri.OpCode, importer.Import(mr)),
+                    TypeReference tr => Instruction.Create(ri.OpCode, importer.Import(tr)),
                     VariableReference vr => Instruction.Create(ri.OpCode, rbody.Variables[vr.Index]),
                     ParameterReference pr => Instruction.Create(ri.OpCode, rbody.Method.Parameters[pr.Index]),
                     Instruction i => ReserveForJumpFixup(ri, i),
@@ -177,7 +177,7 @@ namespace ILCompose
                 feh.FilterStart = fbody.Instructions[reh.FilterStart.Offset];
                 feh.HandlerStart = fbody.Instructions[reh.HandlerStart.Offset];
                 feh.HandlerEnd = fbody.Instructions[reh.HandlerEnd.Offset];
-                feh.CatchType = module.ImportReference(reh.CatchType);
+                feh.CatchType = importer.Import(reh.CatchType);
                 rbody.ExceptionHandlers.Add(feh);
             }
 
@@ -284,6 +284,38 @@ namespace ILCompose
             //////////////////////////////////////////////////////////////////////
             // Step 3. Compose
 
+            var importer = new ReferenceImporter(primaryAssembly.MainModule);
+            if (this.adjustCorlib)
+            {
+                if (primaryAssembly.MainModule.TypeSystem.CoreLibrary is AssemblyNameReference anr)
+                {
+                    var corLibAsssembly = this.assemblyResolver.Resolve(anr);
+                    foreach (var type in corLibAsssembly.MainModule.Types)
+                    {
+                        importer.RegisterForward(type);
+                    }
+                }
+                else
+                {
+                    var types = primaryAssembly.MainModule.TypeSystem;
+                    importer.RegisterForward(types.Object);
+                    importer.RegisterForward(types.Byte);
+                    importer.RegisterForward(types.SByte);
+                    importer.RegisterForward(types.Int16);
+                    importer.RegisterForward(types.UInt16);
+                    importer.RegisterForward(types.Int32);
+                    importer.RegisterForward(types.UInt32);
+                    importer.RegisterForward(types.Int64);
+                    importer.RegisterForward(types.UInt64);
+                    importer.RegisterForward(types.Single);
+                    importer.RegisterForward(types.Double);
+                    importer.RegisterForward(types.Boolean);
+                    importer.RegisterForward(types.Char);
+                    importer.RegisterForward(types.String);
+                    importer.RegisterForward(types.Void);
+                }
+            }
+
             var composed = 0;
             foreach (var forwardrefMethod in primaryMethods)
             {
@@ -291,9 +323,9 @@ namespace ILCompose
                 if (referenceMethods.TryGetValue(fullName, out var referenceMethod))
                 {
                     this.ComposeMethod(
-                        primaryAssembly.MainModule,
                         forwardrefMethod,
-                        referenceMethod);
+                        referenceMethod,
+                        importer);
                     this.logger.Trace($"Composed: {fullName}");
                     composed++;
                 }

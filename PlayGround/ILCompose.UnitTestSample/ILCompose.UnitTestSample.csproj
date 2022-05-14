@@ -7,7 +7,8 @@
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
 
-    <ILComposeLaunchDebugger>false</ILComposeLaunchDebugger>
+    <ILComposeAdjustCorLib>true</ILComposeAdjustCorLib>
+    <ILComposeLaunchDebugger Condition="'$(Configuration)' == 'Debug'">false</ILComposeLaunchDebugger>
   </PropertyGroup>
 
   <ItemGroup>

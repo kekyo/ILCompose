@@ -24,7 +24,7 @@ namespace ILCompose
             try
             {
                 var referenceBasePaths = new string[0];
-                var adjustCorLib = new[] { "mscorlib", "netstandard" };
+                var adjustCorLib = false;
                 var logLevel = LogLevels.Information;
                 var logtfm = default(string);
                 var launchDebugger = false;
@@ -33,7 +33,7 @@ namespace ILCompose
                 var options = new OptionSet()
                 {
                     { "refs=", "Assembly reference base paths", v => referenceBasePaths = v.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries) },
-                    { "adjustCorLib=", "Automatic adjust corlib reference (from,to)", v => adjustCorLib = v.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries) },
+                    { "adjustCorLib", "Automatic adjust corlib reference", _ => adjustCorLib = true },
                     { "logLevel=", "Log level [debug|trace|information|warning|error|silent]", v => logLevel = Enum.TryParse<LogLevels>(v, true, out var ll) ? ll : LogLevels.Information },
                     { "logtfm=", "Log header tfm", v => logtfm = v },
                     { "launchDebugger", "Launch debugger", _ => launchDebugger = true },
@@ -74,9 +74,7 @@ namespace ILCompose
                     Distinct().
                     ToArray();
 
-                var composer = new Composer(
-                    logger, overallReferenceBasePaths,
-                    (adjustCorLib.Length != 2) ? null : (adjustCorLib[0], adjustCorLib[1]));
+                var composer = new Composer(logger, overallReferenceBasePaths, adjustCorLib);
                 if (composer.Compose(primaryAssemblyPath, referenceAssemblyPaths))
                 {
                     return 0;

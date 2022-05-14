@@ -20,6 +20,6 @@ namespace ILCompose.Sample
 
         [EditorBrowsable(EditorBrowsableState.Advanced)]
         [MethodImpl(MethodImplOptions.ForwardRef)]
-        public static extern int TestInCIL();
+        public static extern string TestInCIL(int a);
     }
 }
