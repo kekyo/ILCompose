@@ -134,6 +134,8 @@ warning : Reference to undeclared extern assembly 'System.Runtime'. Attempting a
 warning : Reference to undeclared extern assembly 'mscorlib'. Attempting autodetect
 ```
 
+See also: [dotnet/runtime: ilasm cannot compile against different corlib names](https://github.com/dotnet/runtime/issues/7758)
+
 ILCompose has no control these warning on `ILAsm`,
 but ILCompose will resolve these inconsistent references in the final composite assembly.
 Finally, the primary assembly (the original output assembly of the project) is aggregated into the corlib referenced.
