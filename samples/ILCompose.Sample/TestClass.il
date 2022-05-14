@@ -8,7 +8,7 @@
 /////////////////////////////////////////////////////////////////////////////////////
 
 .class public ILCompose.Sample.TestClass
-    extends [netstandard]System.Object
+    extends System.Object
 {
     .method public static int32 TestInCIL(int32 a, int32 b) cil managed
     {
@@ -18,10 +18,15 @@
         add
         ret
     }
-    .method public static int32 TestInCIL() cil managed
+    .method public static class System.String TestInCIL(int32 a) cil managed
     {
-        .maxstack 2
-        ldc.i4 123
+        // [Description("ABC")]
+        .custom instance void [netstandard]System.ComponentModel.DescriptionAttribute::.ctor(string) = (
+            01 00 03 41 42 43 00 00
+        )
+        .maxstack 1
+        ldarga.s 0
+        call instance class System.String [netstandard]System.Int32::ToString()
         ret
     }
 }

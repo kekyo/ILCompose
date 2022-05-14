@@ -21,5 +21,9 @@ namespace ILCompose.Sample
         [EditorBrowsable(EditorBrowsableState.Advanced)]
         [MethodImpl(MethodImplOptions.ForwardRef)]
         public static extern string TestInCIL(int a);
+
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public static string TestInCSharp(int a) =>
+            a.ToString();
     }
 }

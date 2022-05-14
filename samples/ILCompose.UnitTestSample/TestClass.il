@@ -27,8 +27,8 @@
     .method public static class [System.Runtime]System.String TestInCIL(int32 a) cil managed
     {
         .maxstack 1
-        ldarga 0
-        callvirt instance class [System.Runtime]System.String [System.Runtime]System.Int32::ToString()
+        ldarga.s 0
+        call instance class [System.Runtime]System.String [System.Runtime]System.Int32::ToString()
         ret
     }
 }

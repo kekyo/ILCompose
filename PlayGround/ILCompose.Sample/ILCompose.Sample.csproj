@@ -3,15 +3,19 @@
   <Import Project="..\..\ILCompose\build\ILCompose.props" />
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>net40;netstandard2.0</TargetFrameworks>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
-    <DebugType>embedded</DebugType>
+    <DebugType>full</DebugType>
     <Deterministic>true</Deterministic>
 
     <ILComposeAdjustCorLib>true</ILComposeAdjustCorLib>
     <ILComposeLaunchDebugger Condition="'$(Configuration)' == 'Debug'">false</ILComposeLaunchDebugger>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" PrivateAssets="All" />
+  </ItemGroup>
 
   <Import Project="..\..\ILCompose\build\ILCompose.targets" />
   <PropertyGroup>

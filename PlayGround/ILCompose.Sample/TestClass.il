@@ -8,7 +8,7 @@
 /////////////////////////////////////////////////////////////////////////////////////
 
 .class public ILCompose.Sample.TestClass
-    extends System.Object
+    extends [mscorlib]System.Object
 {
     .method public static int32 TestInCIL(int32 a, int32 b) cil managed
     {
@@ -21,12 +21,12 @@
     .method public static class System.String TestInCIL(int32 a) cil managed
     {
         // [Description("ABC")]
-        .custom instance void [netstandard]System.ComponentModel.DescriptionAttribute::.ctor(string) = (
+        .custom instance void [mscorlib]System.ComponentModel.DescriptionAttribute::.ctor(string) = (
             01 00 03 41 42 43 00 00
         )
         .maxstack 1
-        ldarga 0
-        callvirt instance class System.String [netstandard]System.Int32::ToString()
+        ldarga.s 0
+        call instance class System.String [mscorlib]System.Int32::ToString()
         ret
     }
 }

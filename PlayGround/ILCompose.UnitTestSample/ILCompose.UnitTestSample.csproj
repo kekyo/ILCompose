@@ -6,6 +6,8 @@
     <TargetFramework>net6.0</TargetFramework>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
+    <DebugType>portable</DebugType>
+    <Deterministic>true</Deterministic>
 
     <ILComposeAdjustCorLib>true</ILComposeAdjustCorLib>
     <ILComposeLaunchDebugger Condition="'$(Configuration)' == 'Debug'">false</ILComposeLaunchDebugger>
