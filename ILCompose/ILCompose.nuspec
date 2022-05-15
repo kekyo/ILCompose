@@ -14,6 +14,7 @@
     <copyright>Copyright (c) Kouji Matsui</copyright>
     <tags>ilasm compose mixin ilsupport inline-asm cil msil</tags>
     <repository type="git" url="https://github.com/kekyo/ILCompose.git" branch="$RepositoryBranch$" commit="$RepositoryCommit$" />
+    <developmentDependency>true</developmentDependency>
   </metadata>
   <files>
     <file src="..\Images\ILCompose.100.png" target="/" />
