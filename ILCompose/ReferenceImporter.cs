@@ -27,7 +27,7 @@ namespace ILCompose
 
         public void RegisterForwardType(TypeReference type)
         {
-            if (!this.forwardTypes.ContainsKey(type.Name))
+            if (!this.forwardTypes.ContainsKey(type.FullName))
             {
                 this.forwardTypes.Add(type.FullName, type);
             }
