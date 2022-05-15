@@ -150,7 +150,7 @@ This feature is disabled `<ILComposeAdjustAssemblyReferences>false</ILComposeAdj
 ## Limitation
 
 * `<DebugType>` `embedded` is not supported.
-
+* If no corresponding forwardref method is defined for a CIL method on the source code, that CIL method will not be composed.
 
 ----
 
@@ -158,7 +158,7 @@ This feature is disabled `<ILComposeAdjustAssemblyReferences>false</ILComposeAdj
 
 This project was created in [IL2C](https://github.com/kekyo/IL2C.git),
 there was a need for IL code management.
-In IL2C, CIL unit test code was synthesized into .NET assemblies using ILSupport, but:
+In IL2C, CIL unit test code was composed into .NET assemblies using ILSupport, but:
 
 * The portion of [NUnit](https://nunit.org/) that relies on
   [Custom attributes extensions](https://docs.nunit.org/articles/nunit/extending-nunit/Custom-Attributes.html) has
