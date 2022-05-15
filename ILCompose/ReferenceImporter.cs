@@ -16,27 +16,35 @@ namespace ILCompose
     internal sealed class ReferenceImporter
     {
         private readonly ModuleDefinition module;
-        private readonly Dictionary<string, TypeReference> typeForwards = new();
+        private readonly bool applyForward;
+        private readonly Dictionary<string, TypeReference> forwardTypes = new();
 
-        public ReferenceImporter(ModuleDefinition module) =>
-            this.module = module;
-
-        public void RegisterForward(TypeReference type)
+        public ReferenceImporter(ModuleDefinition module, bool applyForward)
         {
-            if (!typeForwards.ContainsKey(type.Name))
+            this.module = module;
+            this.applyForward = applyForward;
+        }
+
+        public void RegisterForwardType(TypeReference type)
+        {
+            if (!this.forwardTypes.ContainsKey(type.Name))
             {
-                typeForwards.Add(type.FullName, type);
+                this.forwardTypes.Add(type.FullName, type);
             }
         }
 
+        public TypeReference GetForwardType(string fullName) =>
+            this.forwardTypes[fullName];
+
         public TypeReference Import(TypeReference type) =>
             this.module.ImportReference(
-                typeForwards.TryGetValue(type.FullName, out var tf) ? tf : type);
+                (this.applyForward && this.forwardTypes.TryGetValue(type.FullName, out var tf)) ? tf : type);
 
         public MethodReference Import(MethodReference method)
         {
-            if (method.DeclaringType is { } type &&
-                typeForwards.TryGetValue(type.FullName, out var tf))
+            if (this.applyForward &&
+                method.DeclaringType is { } type &&
+                forwardTypes.TryGetValue(type.FullName, out var tf))
             {
                 var itype = this.module.ImportReference(tf);
                 if (itype.Resolve().Methods.
@@ -50,8 +58,9 @@ namespace ILCompose
 
         public FieldReference Import(FieldReference field)
         {
-            if (field.DeclaringType is { } type &&
-                typeForwards.TryGetValue(type.FullName, out var tf))
+            if (this.applyForward &&
+                field.DeclaringType is { } type &&
+                forwardTypes.TryGetValue(type.FullName, out var tf))
             {
                 var itype = this.module.ImportReference(tf);
                 if (itype.Resolve().Fields.

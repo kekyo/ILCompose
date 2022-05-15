@@ -40,22 +40,45 @@ namespace ILCompose
             }
         }
 
+        private static bool IsForwardRef(MethodDefinition method) =>
+            // Native CLR flag,
+            (method.ImplAttributes & MethodImplAttributes.ForwardRef) == MethodImplAttributes.ForwardRef ||
+            // or custom attribute applied last application.
+            // HACK: Complicated problem: because if only the CIL source code is changed in the next build,
+            //   the forwardref flag is missing from the primary assembly,
+            //   so it cannot correctly determine which method to replace,
+            //   and the compose fails but only the build runs.
+            //   At the last build, instead of losing the forwardref flag,
+            //   the original attribute is manually applied so that it can be distinguished again;
+            //   the C# compiler implicitly replaces this attribute with the forwardref flag.
+            //   Thus, unless intentionally inserted into the assembly,
+            //   this flag is not likely to get in the way,
+            //   and there is no need to define an additional attribute type.
+            method.CustomAttributes.Any(ca =>
+                ca.AttributeType.FullName == "System.Runtime.CompilerServices.MethodImplAttribute" &&
+                ca.HasConstructorArguments &&
+                ca.ConstructorArguments.Any(a =>
+                    (a.Value is short s && (s & (short)MethodImplAttributes.ForwardRef) != 0) ||
+                    (a.Value is int i && (i & (int)MethodImplAttributes.ForwardRef) != 0)));
+
         private void ComposeMethod(
             MethodReference forwardrefMethod,
             MethodReference referenceMethod,
-            ReferenceImporter importer)
+            ReferenceImporter importer,
+            MethodReference methodImplConstructor)
         {
-
             var fm = forwardrefMethod.Resolve();
             var rm = referenceMethod.Resolve();
-
-            fm.ImplAttributes = rm.ImplAttributes;
 
             var fbody = fm.Body;
             var rbody = rm.Body;
 
+            fbody.ExceptionHandlers.Clear();
+            fbody.Instructions.Clear();
+            fbody.Variables.Clear();
+
             //////////////////////////////////////////////////
-            
+
             void CopyCustomAttributes(
                 Collection<CustomAttribute> to, Collection<CustomAttribute> from)
             {
@@ -182,7 +205,26 @@ namespace ILCompose
                 rbody.ExceptionHandlers.Add(feh);
             }
 
+            //////////////////////////////////////////////////
+
+            // Drop forwardref
+            fm.ImplAttributes = rm.ImplAttributes & ~MethodImplAttributes.ForwardRef;
+
             CopyCustomAttributes(fm.CustomAttributes, rm.CustomAttributes);
+
+            if (!IsForwardRef(fm))
+            {
+                // Add `MethodImplAttribute`
+                // HACK: See `IsForwardRef()`
+                var c = importer.Import(methodImplConstructor);
+                var tc = new CustomAttribute(c);
+                tc.ConstructorArguments.Add(new CustomAttributeArgument(
+                    c.Module.TypeSystem.Int16, (short)MethodImplAttributes.ForwardRef));
+
+                fm.CustomAttributes.Add(tc);
+            }
+
+            //////////////////////////////////////////////////
 
             foreach (var rsp in rm.DebugInformation.SequencePoints)
             {
@@ -267,7 +309,7 @@ namespace ILCompose
             var primaryMethods = primaryAssembly.Modules.
                 SelectMany(m => m.Types).
                 SelectMany(t => t.Methods).
-                Where(m => (m.ImplAttributes & MethodImplAttributes.ForwardRef) == MethodImplAttributes.ForwardRef).
+                Where(IsForwardRef).
                 ToArray();
             this.logger.Trace($"Target forwardrefs: {primaryMethods.Length}");
 
@@ -287,20 +329,29 @@ namespace ILCompose
             this.logger.Trace($"Detected reference methods: {referenceMethods.Count}");
 
             //////////////////////////////////////////////////////////////////////
-            // Step 3. Compose
+            // Step 3. Setup forwarding types
 
-            var importer = new ReferenceImporter(primaryAssembly.MainModule);
-            if (this.adjustAssemblyReferences)
+            var importer = new ReferenceImporter(
+                primaryAssembly.MainModule, this.adjustAssemblyReferences);
+            foreach (var type in primaryAssembly.Modules.
+                SelectMany(m => m.AssemblyReferences).
+                SelectMany(anr => this.assemblyResolver.Resolve(anr).Modules).
+                SelectMany(m => m.Types).
+                Where(t => (t.IsPublic || t.IsNestedPublic) && t.BaseType != null))
             {
-                foreach (var type in primaryAssembly.Modules.
-                    SelectMany(m => m.AssemblyReferences).
-                    SelectMany(anr => this.assemblyResolver.Resolve(anr).Modules).
-                    SelectMany(m => m.Types).
-                    Where(t => (t.IsPublic || t.IsNestedPublic) && t.BaseType != null))
-                {
-                    importer.RegisterForward(type);
-                }
+                importer.RegisterForwardType(type);
             }
+
+            // HACK: See `IsForwardRef()`
+            var methodImplType = importer.GetForwardType(
+                "System.Runtime.CompilerServices.MethodImplAttribute");
+            var methodImplConstructor = methodImplType.Resolve().Methods.
+                First(m =>
+                    m.IsConstructor &&
+                    m.Parameters.Any(p => p.ParameterType.FullName == "System.Int16"));
+
+            //////////////////////////////////////////////////////////////////////
+            // Step 4. Compose
 
             var composed = 0;
             foreach (var forwardrefMethod in primaryMethods)
@@ -311,7 +362,8 @@ namespace ILCompose
                     this.ComposeMethod(
                         forwardrefMethod,
                         referenceMethod,
-                        importer);
+                        importer,
+                        methodImplConstructor);
                     this.logger.Trace($"Composed: {fullName}");
                     composed++;
                 }
@@ -322,7 +374,7 @@ namespace ILCompose
             }
 
             //////////////////////////////////////////////////////////////////////
-            // Step 4. Finish
+            // Step 5. Finish
 
             if (composed == primaryMethods.Length)
             {
