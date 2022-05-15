@@ -62,16 +62,13 @@ namespace ILCompose
                     (a.Value is int i && (i & (int)MethodImplAttributes.ForwardRef) != 0)));
 
         private void ComposeMethod(
-            MethodReference forwardrefMethod,
-            MethodReference referenceMethod,
+            MethodDefinition forwardrefMethod,
+            MethodDefinition referenceMethod,
             ReferenceImporter importer,
             MethodReference methodImplConstructor)
         {
-            var fm = forwardrefMethod.Resolve();
-            var rm = referenceMethod.Resolve();
-
-            var fbody = fm.Body;
-            var rbody = rm.Body;
+            var fbody = forwardrefMethod.Body;
+            var rbody = referenceMethod.Body;
 
             fbody.ExceptionHandlers.Clear();
             fbody.Instructions.Clear();
@@ -208,11 +205,13 @@ namespace ILCompose
             //////////////////////////////////////////////////
 
             // Drop forwardref
-            fm.ImplAttributes = rm.ImplAttributes & ~MethodImplAttributes.ForwardRef;
+            forwardrefMethod.ImplAttributes = referenceMethod.ImplAttributes & ~MethodImplAttributes.ForwardRef;
 
-            CopyCustomAttributes(fm.CustomAttributes, rm.CustomAttributes);
+            CopyCustomAttributes(
+                forwardrefMethod.CustomAttributes,
+                referenceMethod.CustomAttributes);
 
-            if (!IsForwardRef(fm))
+            if (!IsForwardRef(forwardrefMethod))
             {
                 // Add `MethodImplAttribute`
                 // HACK: See `IsForwardRef()`
@@ -221,12 +220,12 @@ namespace ILCompose
                 tc.ConstructorArguments.Add(new CustomAttributeArgument(
                     c.Module.TypeSystem.Int16, (short)MethodImplAttributes.ForwardRef));
 
-                fm.CustomAttributes.Add(tc);
+                forwardrefMethod.CustomAttributes.Add(tc);
             }
 
             //////////////////////////////////////////////////
 
-            foreach (var rsp in rm.DebugInformation.SequencePoints)
+            foreach (var rsp in referenceMethod.DebugInformation.SequencePoints)
             {
                 var rd = rsp.Document;
                 if (!this.cachedDocuments.TryGetValue(rd, out var fd))
@@ -248,7 +247,7 @@ namespace ILCompose
                 fsp.EndLine = rsp.EndLine;
                 fsp.EndColumn = rsp.EndColumn;
 
-                fm.DebugInformation.SequencePoints.Add(fsp);
+                forwardrefMethod.DebugInformation.SequencePoints.Add(fsp);
             }
         }
 
@@ -337,7 +336,8 @@ namespace ILCompose
                 SelectMany(m => m.AssemblyReferences).
                 SelectMany(anr => this.assemblyResolver.Resolve(anr).Modules).
                 SelectMany(m => m.Types).
-                Where(t => (t.IsPublic || t.IsNestedPublic) && t.BaseType != null))
+                Where(t => (t.IsPublic || t.IsNestedPublic) && t.BaseType != null).
+                Concat(primaryAssembly.Modules.SelectMany(m => m.Types)))
             {
                 importer.RegisterForwardType(type);
             }
