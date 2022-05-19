@@ -7,6 +7,7 @@
 //
 /////////////////////////////////////////////////////////////////////////////////////
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -251,6 +252,15 @@ namespace ILCompose
             }
         }
 
+        private sealed class ModuleDefinitionComparer : IEqualityComparer<ModuleDefinition>
+        {
+            public bool Equals(ModuleDefinition? x, ModuleDefinition? y) =>
+                x!.FileName.Equals(y!.FileName);
+
+            public int GetHashCode(ModuleDefinition obj) =>
+                obj.FileName.GetHashCode();
+        }
+
         public bool Compose(string primaryAssemblyPath, string[] referenceAssemblyPaths)
         {
             var primaryDebuggingPath = Path.Combine(
@@ -331,13 +341,28 @@ namespace ILCompose
             // Step 3. Setup forwarding types
 
             var importer = new ReferenceImporter(
-                primaryAssembly.MainModule, this.adjustAssemblyReferences);
-            foreach (var type in primaryAssembly.Modules.
-                SelectMany(m => m.AssemblyReferences).
-                SelectMany(anr => this.assemblyResolver.Resolve(anr).Modules).
+                primaryAssembly.MainModule,
+                this.adjustAssemblyReferences);
+
+            var corLibRef = primaryAssembly.MainModule.TypeSystem.CoreLibrary switch
+            {
+                AssemblyNameReference anr => this.assemblyResolver.Resolve(anr).MainModule,
+                ModuleDefinition md => md,
+                _ => throw new InvalidOperationException(),
+            };
+            this.logger.Trace($"Detected primary corlib: {corLibRef.FileName}");
+
+            foreach (var type in
+                new[] { corLibRef }.Concat(
+                    primaryAssembly.Modules.
+                    SelectMany(m => m.AssemblyReferences).
+                    SelectMany(anr => this.assemblyResolver.Resolve(anr).Modules)).
+                Concat(primaryAssembly.Modules).
+                Distinct(new ModuleDefinitionComparer()).
                 SelectMany(m => m.Types).
-                Where(t => (t.IsPublic || t.IsNestedPublic) && t.BaseType != null).
-                Concat(primaryAssembly.Modules.SelectMany(m => m.Types)))
+                Where(t =>
+                    (t.IsPublic || t.IsNestedPublic) &&
+                    (t.BaseType != null || t.FullName == "System.Object")))
             {
                 importer.RegisterForwardType(type);
             }
