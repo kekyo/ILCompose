@@ -14,6 +14,7 @@
     
   <PropertyGroup>
     <ILComposeBuildEnable Condition="'$(ILComposeBuildEnable)' == ''">True</ILComposeBuildEnable>
+    <ILComposeBuildEnableCompose Condition="'$(ILComposeBuildEnableCompose)' == ''">True</ILComposeBuildEnableCompose>
     <ILComposeAdjustAssemblyReferences Condition="'$(ILComposeAdjustAssemblyReferences)' == ''">True</ILComposeAdjustAssemblyReferences>
     <ILComposeBuildLogLevel Condition="'$(ILComposeBuildLogLevel)' == ''">Information</ILComposeBuildLogLevel>
     <ILComposeLaunchDebugger Condition="'$(ILComposeLaunchDebugger)' == ''">false</ILComposeLaunchDebugger>
@@ -114,7 +115,8 @@
 
   <Target Name="ILComposeBuild"
     Inputs="@(_ILCompose_CachedPrimaryAssembly);@(_ILCompose_ReferenceAssembly)"
-    Outputs="@(_ILCompose_PrimaryAssembly)">
+    Outputs="@(_ILCompose_PrimaryAssembly)"
+    Condition="$(ILComposeBuildEnableCompose)">
     <_ILCompose_GetCombinedReferencesBasePath References="@(ReferencePath)">
       <Output TaskParameter="CombinedReferencesBasePath" PropertyName="_ILCompose_CombinedReferencesBasePath" />
     </_ILCompose_GetCombinedReferencesBasePath>
