@@ -9,6 +9,7 @@
     <DebugType>portable</DebugType>
     <Deterministic>true</Deterministic>
 
+    <ILComposeBuildLogLevel>Debug</ILComposeBuildLogLevel>
     <ILComposeAdjustAssemblyReferences>true</ILComposeAdjustAssemblyReferences>
     <ILComposeLaunchDebugger Condition="'$(Configuration)' == 'Debug'">false</ILComposeLaunchDebugger>
   </PropertyGroup>

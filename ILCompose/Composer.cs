@@ -24,7 +24,7 @@ namespace ILCompose
         private readonly ILogger logger;
         private readonly string basePath;
         private readonly bool adjustAssemblyReferences;
-        private readonly DefaultAssemblyResolver assemblyResolver = new();
+        private readonly AssemblyResolver assemblyResolver;
         private readonly Dictionary<Document, Document> cachedDocuments = new();
 
         public Composer(
@@ -33,34 +33,8 @@ namespace ILCompose
             this.logger = logger;
             this.basePath = referenceBasePaths[0];
             this.adjustAssemblyReferences = adjustAssemblyReferences;
-
-            foreach (var referenceBasePath in referenceBasePaths)
-            {
-                this.assemblyResolver.AddSearchDirectory(referenceBasePath);
-                this.logger.Debug($"Reference base path: \"{referenceBasePath}\"");
-            }
+            this.assemblyResolver = new(this.logger, referenceBasePaths);
         }
-
-        private static bool IsForwardRef(MethodDefinition method) =>
-            // Native CLR flag,
-            (method.ImplAttributes & MethodImplAttributes.ForwardRef) == MethodImplAttributes.ForwardRef ||
-            // or custom attribute applied last application.
-            // HACK: Complicated problem: because if only the CIL source code is changed in the next build,
-            //   the forwardref flag is missing from the primary assembly,
-            //   so it cannot correctly determine which method to replace,
-            //   and the compose fails but only the build runs.
-            //   At the last build, instead of losing the forwardref flag,
-            //   the original attribute is manually applied so that it can be distinguished again;
-            //   the C# compiler implicitly replaces this attribute with the forwardref flag.
-            //   Thus, unless intentionally inserted into the assembly,
-            //   this flag is not likely to get in the way,
-            //   and there is no need to define an additional attribute type.
-            method.CustomAttributes.Any(ca =>
-                ca.AttributeType.FullName == "System.Runtime.CompilerServices.MethodImplAttribute" &&
-                ca.HasConstructorArguments &&
-                ca.ConstructorArguments.Any(a =>
-                    (a.Value is short s && (s & (short)MethodImplAttributes.ForwardRef) != 0) ||
-                    (a.Value is int i && (i & (int)MethodImplAttributes.ForwardRef) != 0)));
 
         private void ComposeMethod(
             MethodDefinition forwardrefMethod,
@@ -212,7 +186,7 @@ namespace ILCompose
                 forwardrefMethod.CustomAttributes,
                 referenceMethod.CustomAttributes);
 
-            if (!IsForwardRef(forwardrefMethod))
+            if (!Utilities.IsForwardRef(forwardrefMethod))
             {
                 // Add `MethodImplAttribute`
                 // HACK: See `IsForwardRef()`
@@ -261,54 +235,19 @@ namespace ILCompose
                 obj.FileName.GetHashCode();
         }
 
-        public bool Compose(string primaryAssemblyPath, string[] referenceAssemblyPaths)
+        public bool Compose(string primaryAssemblyPath, string[] ilModulePaths)
         {
-            var primaryDebuggingPath = Path.Combine(
-                primaryAssemblyPath,
-                Path.GetFileNameWithoutExtension(primaryAssemblyPath) + ".pdb");
+            this.logger.Information($"Loading primary: {primaryAssemblyPath}");
 
-            // HACK: cecil will lock symbol file when uses defaulted reading method,
-            //   (and couldn't replace it manually).
-            MemoryStream? symbolStream = null;
-            if (File.Exists(primaryDebuggingPath))
-            {
-                this.logger.Trace($"Loading primary pdb: \"{primaryDebuggingPath}\"");
+            using var primaryAssembly = this.assemblyResolver.ReadAssemblyFrom(
+                Path.Combine(this.basePath, primaryAssemblyPath));
 
-                using var pdbStream = new FileStream(
-                    primaryDebuggingPath, FileMode.Open, FileAccess.Read, FileShare.None);
-                symbolStream = new MemoryStream();
-                pdbStream.CopyTo(symbolStream);
-                symbolStream.Position = 0;
-            }
-
-            this.logger.Information($"Loading primary: \"{primaryAssemblyPath}\"");
-
-            using var primaryAssembly = AssemblyDefinition.ReadAssembly(
-                Path.Combine(this.basePath, primaryAssemblyPath),
-                new ReaderParameters
+            var ilModules = ilModulePaths.
+                Select(ilModulePath =>
                 {
-                    ReadWrite = false,
-                    InMemory = true,
-                    AssemblyResolver = this.assemblyResolver,
-                    SymbolReaderProvider = new PdbReaderProvider(),
-                    ReadSymbols = true,
-                    SymbolStream = symbolStream,
-                });
-
-            var referenceModules = referenceAssemblyPaths.
-                Select(referencePath =>
-                {
-                    this.logger.Information($"Loading reference: \"{referencePath}\"");
-                    return ModuleDefinition.ReadModule(
-                        Path.Combine(this.basePath, referencePath),
-                        new ReaderParameters
-                        {
-                            ReadWrite = false,
-                            InMemory = true,
-                            AssemblyResolver = this.assemblyResolver,
-                            SymbolReaderProvider = new PdbReaderProvider(),
-                            ReadSymbols = true,
-                        });
+                    this.logger.Information($"Loading IL module: {ilModulePath}");
+                    return this.assemblyResolver.ReadModuleFrom(
+                        Path.Combine(this.basePath, ilModulePath));
                 }).
                 ToArray();
 
@@ -318,24 +257,24 @@ namespace ILCompose
             var primaryMethods = primaryAssembly.Modules.
                 SelectMany(m => m.Types).
                 SelectMany(t => t.Methods).
-                Where(IsForwardRef).
+                Where(Utilities.IsForwardRef).
                 ToArray();
             this.logger.Trace($"Target forwardrefs: {primaryMethods.Length}");
 
             if (primaryMethods.Length == 0)
             {
-                this.logger.Information($"Could not any forwardref methods.");
+                this.logger.Warning($"Could not any forwardref methods.");
                 return true;
             }
 
             //////////////////////////////////////////////////////////////////////
-            // Step 2. Create reference method dictionary.
+            // Step 2. Create IL method dictionary.
 
-            var referenceMethods = referenceModules.
+            var ilMethods = ilModules.
                 SelectMany(m => m.Types).
                 SelectMany(t => t.Methods).
                 ToDictionary(m => m.FullName, m => m);
-            this.logger.Trace($"Detected reference methods: {referenceMethods.Count}");
+            this.logger.Trace($"Detected IL methods: {ilMethods.Count}");
 
             //////////////////////////////////////////////////////////////////////
             // Step 3. Setup forwarding types
@@ -382,7 +321,7 @@ namespace ILCompose
             foreach (var forwardrefMethod in primaryMethods)
             {
                 var fullName = forwardrefMethod.FullName;
-                if (referenceMethods.TryGetValue(fullName, out var referenceMethod))
+                if (ilMethods.TryGetValue(fullName, out var referenceMethod))
                 {
                     this.ComposeMethod(
                         forwardrefMethod,
@@ -403,7 +342,7 @@ namespace ILCompose
 
             if (composed == primaryMethods.Length)
             {
-                var targetBasePath = Path.GetDirectoryName(primaryAssemblyPath) ?? ".";
+                var targetBasePath = Utilities.GetDirectoryPath(primaryAssemblyPath);
 
                 // Backup original assembly and symbol files,
                 // because cecil will fail when contains invalid metadata.
@@ -430,6 +369,10 @@ namespace ILCompose
                 }
                 try
                 {
+                    var primaryDebuggingPath = Path.Combine(
+                        Utilities.GetDirectoryPath(primaryAssemblyPath),
+                        Path.GetFileNameWithoutExtension(primaryAssemblyPath) + ".pdb");
+
                     if (File.Exists(primaryDebuggingPath))
                     {
                         File.Move(primaryDebuggingPath, backupDebuggingPath);
@@ -483,7 +426,7 @@ namespace ILCompose
                     File.Delete(backupDebuggingPath);
                 }
 
-                this.logger.Information($"Assembly composed: Path={primaryAssemblyPath}, Methods={composed}");
+                this.logger.Information($"Assembly composed: {primaryAssemblyPath}, Methods={composed}");
 
                 return true;
             }
