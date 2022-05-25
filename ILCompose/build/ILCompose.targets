@@ -83,7 +83,7 @@
         
   <!-- ====================================================================== -->
 
-  <Target Name="ILComposeBuildAfterCompile" AfterTargets="Compile"
+  <Target Name="ILComposeBuildTarget" AfterTargets="Compile" DependsOnTargets="$(ILComposeDependsOnTargets)"
     Condition="'$(ILComposeBuildEnable)' == 'True'">
     <CallTarget Targets="ILComposePrepare; ILComposeAssembleIL; ILComposeBuild" />
   </Target>

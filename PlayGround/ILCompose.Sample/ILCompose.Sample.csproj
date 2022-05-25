@@ -10,8 +10,9 @@
     <DebugType>full</DebugType>
     <Deterministic>true</Deterministic>
 
+    <ILComposeBuildLogLevel>Debug</ILComposeBuildLogLevel>
     <ILComposeAdjustAssemblyReferences>true</ILComposeAdjustAssemblyReferences>
-    <ILComposeLaunchDebugger Condition="'$(Configuration)' == 'Debug'">false</ILComposeLaunchDebugger>
+    <ILComposeLaunchDebugger Condition="'$(Configuration)' == 'Debug'">true</ILComposeLaunchDebugger>
   </PropertyGroup>
 
   <ItemGroup>
