@@ -25,7 +25,6 @@
 
   <PropertyGroup>
     <_ILCompose_ScriptBaseDir>$(MSBuildThisFileDirectory)</_ILCompose_ScriptBaseDir>
-    <ILComposeDependsOnTargets>Compile</ILComposeDependsOnTargets>
   </PropertyGroup>
 
   <ItemGroup>
