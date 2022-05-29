@@ -3,7 +3,7 @@
   <Import Project="..\..\ILCompose\build\ILCompose.props" />
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFrameworks>net48;net6.0</TargetFrameworks>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <DebugType>portable</DebugType>

@@ -83,7 +83,8 @@
         
   <!-- ====================================================================== -->
 
-  <Target Name="ILComposeBuildTarget" AfterTargets="Compile" DependsOnTargets="$(ILComposeDependsOnTargets)"
+  <Target Name="ILComposeBuildTarget"
+    BeforeTargets="CopyFilesToOutputDirectory"
     Condition="'$(ILComposeBuildEnable)' == 'True'">
     <CallTarget Targets="ILComposePrepare; ILComposeAssembleIL; ILComposeBuild" />
   </Target>
@@ -93,7 +94,7 @@
       <!-- Maybe `IntermediateAssembly` is only one file. -->
       <_ILCompose_PrimaryAssembly Include="@(IntermediateAssembly->'%(FullPath)')" />
       <_ILCompose_ReferenceAssembly Include="@(IntermediateAssembly->'%(RootDir)%(Directory)%(Filename)_il.dll')" />
-      <_ILCompose_CachedPrimaryAssembly Include="@(IntermediateAssembly->'%(RootDir)%(Directory)%(Filename)_cached.dll')" />
+      <_ILCompose_BackupPrimaryAssembly Include="@(IntermediateAssembly->'%(RootDir)%(Directory)%(Filename)_backup.dll')" />
     </ItemGroup>
   </Target>
     
@@ -114,8 +115,8 @@
   </Target>
 
   <Target Name="ILComposeBuild"
-    Inputs="@(_ILCompose_CachedPrimaryAssembly);@(_ILCompose_ReferenceAssembly)"
-    Outputs="@(_ILCompose_PrimaryAssembly)"
+    Inputs="@(_ILCompose_ReferenceAssembly)"
+    Outputs="@(_ILCompose_PrimaryAssembly);@(_ILCompose_BackupPrimaryAssembly)"
     Condition="$(ILComposeBuildEnableCompose)">
     <_ILCompose_GetCombinedReferencesBasePath References="@(ReferencePath)">
       <Output TaskParameter="CombinedReferencesBasePath" PropertyName="_ILCompose_CombinedReferencesBasePath" />
@@ -130,6 +131,10 @@
       <_ILCompose_LaunchDebuggerOption Condition="$(ILComposeLaunchDebugger)">--launchDebugger</_ILCompose_LaunchDebuggerOption>
       <_ILCompose_Options>$(_ILCompose_BuildLogLevelOption) $(_ILCompose_LaunchDebuggerOption) $(_ILCompose_CombinedReferenceBasePathOption) $(_ILCompose_AdjustAssemblyReferencesOption)</_ILCompose_Options>
     </PropertyGroup>
+    <Copy SourceFiles="@(_ILCompose_ReferenceAssembly)" DestinationFiles="@(_ILCompose_BackupPrimaryAssembly)" OverwriteReadOnlyFiles="True" Retries="$(CopyRetryCount)" />
+    <ItemGroup>
+      <FileWrites Include="$(_ILCompose_BackupPrimaryAssembly)" />
+    </ItemGroup>
     <Exec WorkingDirectory="$(ILComposeBuildToolingDir)"
         Command="$(ILComposeBuildToolingRuntimeName)&quot;$(ILComposeBuildToolingPath)&quot; $(_ILCompose_Options) @(_ILCompose_PrimaryAssembly->'&quot;%(FullPath)&quot;',' ') @(_ILCompose_ReferenceAssembly->'&quot;%(FullPath)&quot;',' ')" />
     <ItemGroup>
