@@ -42,12 +42,8 @@ namespace ILCompose
             ReferenceImporter importer,
             MethodReference methodImplConstructor)
         {
-            var fbody = forwardrefMethod.Body;
+            var fbody = new MethodBody(forwardrefMethod);
             var rbody = referenceMethod.Body;
-
-            fbody.ExceptionHandlers.Clear();
-            fbody.Instructions.Clear();
-            fbody.Variables.Clear();
 
             //////////////////////////////////////////////////
 
