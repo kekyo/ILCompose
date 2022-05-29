@@ -173,6 +173,9 @@ namespace ILCompose
                 rbody.ExceptionHandlers.Add(feh);
             }
 
+            // Updated new body.
+            forwardrefMethod.Body = fbody;
+
             //////////////////////////////////////////////////
 
             // Drop forwardref

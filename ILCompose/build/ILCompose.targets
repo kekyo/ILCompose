@@ -131,7 +131,7 @@
       <_ILCompose_LaunchDebuggerOption Condition="$(ILComposeLaunchDebugger)">--launchDebugger</_ILCompose_LaunchDebuggerOption>
       <_ILCompose_Options>$(_ILCompose_BuildLogLevelOption) $(_ILCompose_LaunchDebuggerOption) $(_ILCompose_CombinedReferenceBasePathOption) $(_ILCompose_AdjustAssemblyReferencesOption)</_ILCompose_Options>
     </PropertyGroup>
-    <Copy SourceFiles="@(_ILCompose_ReferenceAssembly)" DestinationFiles="@(_ILCompose_BackupPrimaryAssembly)" OverwriteReadOnlyFiles="True" Retries="$(CopyRetryCount)" />
+    <Copy SourceFiles="@(_ILCompose_PrimaryAssembly)" DestinationFiles="@(_ILCompose_BackupPrimaryAssembly)" OverwriteReadOnlyFiles="True" Retries="$(CopyRetryCount)" />
     <ItemGroup>
       <FileWrites Include="$(_ILCompose_BackupPrimaryAssembly)" />
     </ItemGroup>
