@@ -50,21 +50,23 @@
   <PropertyGroup>
     <_ILCompose_NETCoreSdkRuntimeIdentifier>$(NETCoreSdkPortableRuntimeIdentifier)</_ILCompose_NETCoreSdkRuntimeIdentifier>
     <_ILCompose_NETCoreSdkRuntimeIdentifier Condition="'$(_ILCompose_NETCoreSdkRuntimeIdentifier)' == ''">$(NETCoreSdkRuntimeIdentifier)</_ILCompose_NETCoreSdkRuntimeIdentifier>
-    <_ILCompose_MicrosoftNetCoreIlasmPackageRuntimeId Condition="'$(_ILCompose_MicrosoftNetCoreIlasmPackageRuntimeId)' == ''">$(_ILCompose_NETCoreSdkRuntimeIdentifier)</_ILCompose_MicrosoftNetCoreIlasmPackageRuntimeId>
+    <_ILCompose_MicrosoftNetCoreILAsmPackageRuntimeId Condition="'$(_ILCompose_MicrosoftNetCoreILAsmPackageRuntimeId)' == ''">$(_ILCompose_NETCoreSdkRuntimeIdentifier)</_ILCompose_MicrosoftNetCoreILAsmPackageRuntimeId>
    
     <_ILCompose_MicrosoftNETCoreToolingVersion Condition="'$(_ILCompose_MicrosoftNETCoreToolingVersion)' == ''">6.0.0</_ILCompose_MicrosoftNETCoreToolingVersion>
-    <_ILCompose_MicrosoftNetCoreIlasmPackageName>runtime.$(_ILCompose_MicrosoftNetCoreIlasmPackageRuntimeId).Microsoft.NETCore.ILAsm</_ILCompose_MicrosoftNetCoreIlasmPackageName>
+    <_ILCompose_MicrosoftNetCoreILAsmPackageName>runtime.$(_ILCompose_MicrosoftNetCoreILAsmPackageRuntimeId).Microsoft.NETCore.ILAsm</_ILCompose_MicrosoftNetCoreILAsmPackageName>
 
     <_ILCompose_ILAsmCommandDir Condition="'$(ILComposeILAsmToolPath)' != ''">$([MSBuild]::NormalizeDirectory($(ILComposeILAsmToolPath)))</_ILCompose_ILAsmCommandDir>
   </PropertyGroup>
     
   <ItemGroup Condition="'$(ILComposeILAsmToolPath)' == ''">
-    <_ILCompose_ILAsmCommandPackageReference Include="$(_ILCompose_MicrosoftNetCoreIlasmPackageName)" Version="$(_ILCompose_MicrosoftNETCoreToolingVersion)" />
     <!-- Made NuGet package referrer likes:
         For windows x64: runtime.win-x64.Microsoft.NETCore.ILAsm
         For linux x64: runtime.linux-x64.Microsoft.NETCore.ILAsm
     -->
-    <PackageReference Include="@(_ILCompose_ILAsmCommandPackageReference)" ExcludeAssets="all" PrivateAssets="all" />
+    <PackageReference
+      Include="$(_ILCompose_MicrosoftNetCoreILAsmPackageName)"
+      Version="$(_ILCompose_MicrosoftNETCoreToolingVersion)"
+      ExcludeAssets="all" PrivateAssets="all" />
   </ItemGroup>
     
   <!-- If ILComposeILAsmToolPath is specified, it will be used and no packages will be restored
@@ -72,13 +74,8 @@
   <Target Name="ILComposeResolveILAsmToolPaths"
     BeforeTargets="PrepareForBuild;_GenerateRestoreProjectSpec"
     Condition="'$(ILComposeILAsmToolPath)' == ''">
-    <ItemGroup>
-      <_ILCompose_ILAsmCommandPackageReference NativePath="$(NuGetPackageRoot)\%(Identity)\%(Version)\runtimes\$(_ILCompose_MicrosoftNetCoreIlasmPackageRuntimeId)\native" />
-    </ItemGroup>
-    <Error Condition="!Exists('%(_ILCompose_ILAsmCommandPackageReference.NativePath)')" Text="Package %(_ILCompose_ILAsmCommandPackageReference.Identity)\%(_ILCompose_ILAsmCommandPackageReference.Version) was not restored" />
     <PropertyGroup>
-      <_ILCompose_ILAsmCommandDir Condition="'$(_ILCompose_ILAsmCommandDir)' == '' and '%(_ILCompose_ILAsmCommandPackageReference.Identity)' == '$(_ILCompose_MicrosoftNetCoreIlasmPackageName)'">%(_ILCompose_ILAsmCommandPackageReference.NativePath)/</_ILCompose_ILAsmCommandDir>
-      <!-- Resolved final tooling path -->
+      <_ILCompose_ILAsmCommandDir>$([System.IO.Path]::Combine('$(NuGetPackageRoot)','$(_ILCompose_MicrosoftNetCoreILAsmPackageName.ToLowerInvariant())','$(_ILCompose_MicrosoftNETCoreToolingVersion)','runtimes','$(_ILCompose_MicrosoftNetCoreILAsmPackageRuntimeId)','native'))</_ILCompose_ILAsmCommandDir>
       <_ILCompose_ILAsmCommandPath>$([System.IO.Path]::Combine('$(_ILCompose_ILAsmCommandDir)','ilasm'))</_ILCompose_ILAsmCommandPath>
     </PropertyGroup>
   </Target>
