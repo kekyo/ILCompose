@@ -122,7 +122,7 @@
       <Output TaskParameter="CombinedReferencesBasePath" PropertyName="_ILCompose_CombinedReferencesBasePath" />
     </_ILCompose_GetCombinedReferencesBasePath>
     <PropertyGroup>
-      <ILComposeBuildToolingRuntimeName Condition="'$(ILComposeBuildToolingRuntimeName)' == ''">$(_ILCompose_ILCompose_NETCoreSdkRuntimeIdentifierName)</ILComposeBuildToolingRuntimeName>
+      <ILComposeBuildToolingRuntimeName Condition="'$(ILComposeBuildToolingRuntimeName)' == ''">$(_ILCompose_RuntimeName)</ILComposeBuildToolingRuntimeName>
       <ILComposeBuildToolingDir Condition="'$(ILComposeBuildToolingDir)' == ''">$([System.IO.Path]::GetFullPath('$(_ILCompose_ToolingDir)'))</ILComposeBuildToolingDir>
       <ILComposeBuildToolingPath Condition="'$(ILComposeBuildToolingPath)' == ''">$([System.IO.Path]::Combine('$(ILComposeBuildToolingDir)','$(_ILCompose_ExecutableName)'))</ILComposeBuildToolingPath>
       <_ILCompose_CombinedReferenceBasePathOption>--refs=&quot;$(_ILCompose_CombinedReferencesBasePath)&quot;</_ILCompose_CombinedReferenceBasePathOption>
