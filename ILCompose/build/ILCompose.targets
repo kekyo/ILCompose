@@ -54,8 +54,6 @@
    
     <_ILCompose_MicrosoftNETCoreToolingVersion Condition="'$(_ILCompose_MicrosoftNETCoreToolingVersion)' == ''">6.0.0</_ILCompose_MicrosoftNETCoreToolingVersion>
     <_ILCompose_MicrosoftNetCoreILAsmPackageName>runtime.$(_ILCompose_MicrosoftNetCoreILAsmPackageRuntimeId).Microsoft.NETCore.ILAsm</_ILCompose_MicrosoftNetCoreILAsmPackageName>
-
-    <_ILCompose_ILAsmCommandDir Condition="'$(ILComposeILAsmToolPath)' != ''">$([MSBuild]::NormalizeDirectory($(ILComposeILAsmToolPath)))</_ILCompose_ILAsmCommandDir>
   </PropertyGroup>
     
   <ItemGroup Condition="'$(ILComposeILAsmToolPath)' == ''">
@@ -71,12 +69,16 @@
     
   <!-- If ILComposeILAsmToolPath is specified, it will be used and no packages will be restored
     Otherwise packages will be restored and ilasm and ildasm will be referenced from their packages.  -->
-  <Target Name="ILComposeResolveILAsmToolPaths"
-    BeforeTargets="PrepareForBuild;_GenerateRestoreProjectSpec"
-    Condition="'$(ILComposeILAsmToolPath)' == ''">
-    <PropertyGroup>
+  <Target Name="ILComposeResolveILAsmToolPath"
+    BeforeTargets="PrepareForBuild;_GenerateRestoreProjectSpec">
+    <PropertyGroup Condition="'$(ILComposeILAsmToolPath)' == ''">
+      <_ILCompose_ILAsmCommandFileName Condition="'$(OS)' == 'Windows_NT'">ilasm.exe</_ILCompose_ILAsmCommandFileName>
+      <_ILCompose_ILAsmCommandFileName Condition="'$(OS)' != 'Windows_NT'">ilasm</_ILCompose_ILAsmCommandFileName>
       <_ILCompose_ILAsmCommandDir>$([System.IO.Path]::Combine('$(NuGetPackageRoot)','$(_ILCompose_MicrosoftNetCoreILAsmPackageName.ToLowerInvariant())','$(_ILCompose_MicrosoftNETCoreToolingVersion)','runtimes','$(_ILCompose_MicrosoftNetCoreILAsmPackageRuntimeId)','native'))</_ILCompose_ILAsmCommandDir>
-      <_ILCompose_ILAsmCommandPath>$([System.IO.Path]::Combine('$(_ILCompose_ILAsmCommandDir)','ilasm'))</_ILCompose_ILAsmCommandPath>
+      <_ILCompose_ILAsmCommandPath>$([System.IO.Path]::Combine('$(_ILCompose_ILAsmCommandDir)','$(_ILCompose_ILAsmCommandFileName)'))</_ILCompose_ILAsmCommandPath>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(ILComposeILAsmToolPath)' != ''">
+      <_ILCompose_ILAsmCommandPath>$([MSBuild]::NormalizeDirectory($(ILComposeILAsmToolPath)))</_ILCompose_ILAsmCommandPath>
     </PropertyGroup>
   </Target>
         
