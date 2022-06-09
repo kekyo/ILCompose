@@ -48,6 +48,8 @@ In sample.il:
 These source code compose into one assembly by ILCompose.
 Semantically, it is similar to the C# partial class definition, but it does this at the CIL level.
 
+![Diagram](Images/diagram.png)
+
 All CIL assemble source code (*.il) are automatically assembled by official dotnet IL assembler `ILAsm`.
 
 Only you have to do install the NuGet package [ILCompose](https://www.nuget.org/packages/ILCompose) and ready to use!
