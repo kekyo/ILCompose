@@ -15,6 +15,9 @@
     <tags>ilasm compose mixin ilsupport inline-asm cil msil</tags>
     <repository type="git" url="https://github.com/kekyo/ILCompose.git" branch="$RepositoryBranch$" commit="$RepositoryCommit$" />
     <developmentDependency>true</developmentDependency>
+    <dependencies>
+      <dependency id="ILAsm.Managed" version="0.1.0" exclude="all" />
+    </dependencies>
   </metadata>
   <files>
     <file src="..\Images\ILCompose.100.png" target="/" />

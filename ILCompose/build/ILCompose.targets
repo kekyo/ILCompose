@@ -18,6 +18,7 @@
     <ILComposeAdjustAssemblyReferences Condition="'$(ILComposeAdjustAssemblyReferences)' == ''">True</ILComposeAdjustAssemblyReferences>
     <ILComposeBuildLogLevel Condition="'$(ILComposeBuildLogLevel)' == ''">Information</ILComposeBuildLogLevel>
     <ILComposeLaunchDebugger Condition="'$(ILComposeLaunchDebugger)' == ''">false</ILComposeLaunchDebugger>
+    <ILComposeUsingILAsmManaged Condition="'$(ILComposeUsingILAsmManaged)' == ''">true</ILComposeUsingILAsmManaged>
   </PropertyGroup>
 
   <!-- Common (internal) -->
@@ -41,12 +42,13 @@
   </PropertyGroup>
         
   <!-- ====================================================================== -->
-
-  <!-- Imported from: Microsoft.NET.Sdk.IL.targets
-    https://github.com/kekyo/IL2C/issues/100#issuecomment-944294766
-    https://github.com/dotnet/runtime/blob/57bfe474518ab5b7cfe6bf7424a79ce3af9d6657/src/coreclr/.nuget/Microsoft.NET.Sdk.IL/targets/Microsoft.NET.Sdk.IL.targets#L29
-  -->
     
+  <!-- Dynamically fixup CoreCLR's ILAsm package.
+    IMPORTANT: Adding package references to official CoreCLR ILAsm dynamically does not work well in some environments.
+      However, this is a technique used in the official scripts, so it is left as an option...
+      https://github.com/dotnet/runtime/blob/ed1595e2b10c32ed076d345567407ba1c081e1dd/src/coreclr/.nuget/Microsoft.NET.Sdk.IL/targets/Microsoft.NET.Sdk.IL.targets#L45
+  -->
+
   <PropertyGroup>
     <_ILCompose_NETCoreSdkRuntimeIdentifier>$(NETCoreSdkPortableRuntimeIdentifier)</_ILCompose_NETCoreSdkRuntimeIdentifier>
     <_ILCompose_NETCoreSdkRuntimeIdentifier Condition="'$(_ILCompose_NETCoreSdkRuntimeIdentifier)' == ''">$(NETCoreSdkRuntimeIdentifier)</_ILCompose_NETCoreSdkRuntimeIdentifier>
@@ -55,32 +57,17 @@
     <_ILCompose_MicrosoftNETCoreToolingVersion Condition="'$(_ILCompose_MicrosoftNETCoreToolingVersion)' == ''">6.0.0</_ILCompose_MicrosoftNETCoreToolingVersion>
     <_ILCompose_MicrosoftNetCoreILAsmPackageName>runtime.$(_ILCompose_MicrosoftNetCoreILAsmPackageRuntimeId).Microsoft.NETCore.ILAsm</_ILCompose_MicrosoftNetCoreILAsmPackageName>
   </PropertyGroup>
-    
-  <ItemGroup Condition="'$(ILComposeILAsmToolPath)' == ''">
+
+  <ItemGroup Condition="!($(ILComposeUsingILAsmManaged))">
     <!-- Made NuGet package referrer likes:
-        For windows x64: runtime.win-x64.Microsoft.NETCore.ILAsm
-        For linux x64: runtime.linux-x64.Microsoft.NETCore.ILAsm
+       For windows x64: runtime.win-x64.Microsoft.NETCore.ILAsm
+       For linux x64: runtime.linux-x64.Microsoft.NETCore.ILAsm
     -->
     <PackageReference
       Include="$(_ILCompose_MicrosoftNetCoreILAsmPackageName)"
       Version="$(_ILCompose_MicrosoftNETCoreToolingVersion)"
       ExcludeAssets="all" PrivateAssets="all" />
   </ItemGroup>
-    
-  <!-- If ILComposeILAsmToolPath is specified, it will be used and no packages will be restored
-    Otherwise packages will be restored and ilasm and ildasm will be referenced from their packages.  -->
-  <Target Name="ILComposeResolveILAsmToolPath"
-    BeforeTargets="PrepareForBuild;_GenerateRestoreProjectSpec">
-    <PropertyGroup Condition="'$(ILComposeILAsmToolPath)' == ''">
-      <_ILCompose_ILAsmCommandFileName Condition="'$(OS)' == 'Windows_NT'">ilasm.exe</_ILCompose_ILAsmCommandFileName>
-      <_ILCompose_ILAsmCommandFileName Condition="'$(OS)' != 'Windows_NT'">ilasm</_ILCompose_ILAsmCommandFileName>
-      <_ILCompose_ILAsmCommandDir>$([System.IO.Path]::Combine('$(NuGetPackageRoot)','$(_ILCompose_MicrosoftNetCoreILAsmPackageName.ToLowerInvariant())','$(_ILCompose_MicrosoftNETCoreToolingVersion)','runtimes','$(_ILCompose_MicrosoftNetCoreILAsmPackageRuntimeId)','native'))</_ILCompose_ILAsmCommandDir>
-      <_ILCompose_ILAsmCommandPath>$([System.IO.Path]::Combine('$(_ILCompose_ILAsmCommandDir)','$(_ILCompose_ILAsmCommandFileName)'))</_ILCompose_ILAsmCommandPath>
-    </PropertyGroup>
-    <PropertyGroup Condition="'$(ILComposeILAsmToolPath)' != ''">
-      <_ILCompose_ILAsmCommandPath>$([MSBuild]::NormalizeDirectory($(ILComposeILAsmToolPath)))</_ILCompose_ILAsmCommandPath>
-    </PropertyGroup>
-  </Target>
         
   <!-- ====================================================================== -->
 
@@ -103,17 +90,36 @@
   <Target Name="ILComposeAssembleIL"
     Inputs="@(ILComposeTargetIL)"
     Outputs="@(_ILCompose_ReferenceAssembly)">
-    <PropertyGroup>
-      <_ILCompose_ILAsmCommand>&quot;$(_ILCompose_ILAsmCommandPath)&quot; -nologo -quite -debug -pdbfmt=portable -dll -output=@(_ILCompose_ReferenceAssembly->'&quot;%(FullPath)&quot;',' ')</_ILCompose_ILAsmCommand>
+      
+    <!-- For using custom ILAsm -->
+    <PropertyGroup Condition="'$(ILComposeILAsmToolPath)' != ''">
+      <_ILCompose_ILAsmCommand>&quot;$([MSBuild]::NormalizeDirectory($(ILComposeILAsmToolPath)))&quot;</_ILCompose_ILAsmCommand>
+      <_ILCompose_ILAsmCommandOptions>$(ILComposeILAsmToolOptions)</_ILCompose_ILAsmCommandOptions>
     </PropertyGroup>
-    <PropertyGroup Condition="'$(Optimize)' == 'true'">
-      <_ILCompose_ILAsmCommand>$(_ILCompose_ILAsmCommand) -optimize</_ILCompose_ILAsmCommand>
+      
+    <!-- For using ILAsm.Managed -->
+    <PropertyGroup Condition="('$(ILComposeILAsmToolPath)' == '') AND ($(ILComposeUsingILAsmManaged))">
+      <_ILCompose_ILAsmCommand>$(ILAsmManagedBuildToolingRuntimeName)&quot;$(ILAsmManagedBuildToolingPath)&quot;</_ILCompose_ILAsmCommand>
+      <_ILCompose_ILAsmCommandOptions>-debug -dll -output:</_ILCompose_ILAsmCommandOptions>
     </PropertyGroup>
-    <Exec Command="$(_ILCompose_ILAsmCommand) @(ILComposeTargetIL->'&quot;%(FullPath)&quot;',' ')" />
+      
+    <!-- For using CoreCLR ILAsm -->
+    <PropertyGroup Condition="('$(ILComposeILAsmToolPath)' == '') AND (!$(ILComposeUsingILAsmManaged))">
+      <_ILCompose_ILAsmCommandFileName Condition="'$(OS)' == 'Windows_NT'">ilasm.exe</_ILCompose_ILAsmCommandFileName>
+      <_ILCompose_ILAsmCommandFileName Condition="'$(OS)' != 'Windows_NT'">ilasm</_ILCompose_ILAsmCommandFileName>
+      <_ILCompose_ILAsmCommandDir>$([System.IO.Path]::Combine('$(NuGetPackageRoot)','$(_ILCompose_MicrosoftNetCoreILAsmPackageName.ToLowerInvariant())','$(_ILCompose_MicrosoftNETCoreToolingVersion)','runtimes','$(_ILCompose_MicrosoftNetCoreILAsmPackageRuntimeId)','native'))</_ILCompose_ILAsmCommandDir>
+      <_ILCompose_ILAsmCommand>&quot;$([System.IO.Path]::Combine('$(_ILCompose_ILAsmCommandDir)','$(_ILCompose_ILAsmCommandFileName)'))&quot;</_ILCompose_ILAsmCommand>
+      <_ILCompose_ILAsmCommandOptions Condition="'$(Optimize)' == 'true'">-nologo -quite -debug -pdbfmt=portable -dll -optimize -output=</_ILCompose_ILAsmCommandOptions>
+      <_ILCompose_ILAsmCommandOptions Condition="'$(Optimize)' != 'true'">-nologo -quite -debug -pdbfmt=portable -dll -output=</_ILCompose_ILAsmCommandOptions>
+    </PropertyGroup>
+
+    <Exec Command="$(_ILCompose_ILAsmCommand) $(_ILCompose_ILAsmCommandOptions)@(_ILCompose_ReferenceAssembly->'&quot;%(FullPath)&quot;',' ') @(ILComposeTargetIL->'&quot;%(FullPath)&quot;',' ')" />
+
     <Message Importance="normal" Text="ILCompose: CIL source code assembled. Output=@(_ILCompose_ReferenceAssembly->'%(FullPath)')" />
     <ItemGroup>
       <FileWrites Include="@(_ILCompose_ReferenceAssembly)" />
     </ItemGroup>
+
   </Target>
 
   <Target Name="ILComposeBuildCore"
