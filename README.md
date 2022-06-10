@@ -90,6 +90,25 @@ See fully sample code:
 
 ----
 
+## Choose IL assembler
+
+You can choose IL assembler between:
+
+* [ILAsm.Managed](https://github.com/kekyo/ILAsm.Managed): Defaulted, no need to action.
+* [CoreCLR ILAsm](https://www.nuget.org/packages/Microsoft.NETCore.ILAsm/): Optional, need to set `<ILComposeUsingILAsmManaged>false</ILComposeUsingILAsmManaged>` into `<PropertyGroup>`.
+* Your own `ilasm.exe`: Optional, need to set `<ILComposeILAsmToolPath>` and `<ILComposeILAsmToolOptions>`.
+
+### Why ILAsm.Managed is defaulted instead CoreCLR one?
+
+Because CoreCLR ILAsm package contains many different sub packages included native binary each OS distributions.
+And [standard dynamic reference script technique has a problem](https://github.com/dotnet/runtime/blob/ed1595e2b10c32ed076d345567407ba1c081e1dd/src/coreclr/.nuget/Microsoft.NET.Sdk.IL/targets/Microsoft.NET.Sdk.IL.targets#L45),
+could not effect MSBuild script conditions at running `dotnet restore` and `nuget restore` time except using Visual Studio IDE.
+
+If you are concerned about the stock ILAsm, and in fact ILAsm.Managed fails to compile,
+you can accept the above problem and use it.
+
+----
+
 ## Insight
 
 ILSupport is cumbersome because it requires custom build scripts to be incorporated into the your project.
