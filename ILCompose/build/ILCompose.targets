@@ -100,7 +100,9 @@
     <!-- For using ILAsm.Managed -->
     <PropertyGroup Condition="('$(ILComposeILAsmToolPath)' == '') AND ($(ILComposeUsingILAsmManaged))">
       <_ILCompose_ILAsmCommand>$(ILAsmManagedBuildToolingRuntimeName)&quot;$(ILAsmManagedBuildToolingPath)&quot;</_ILCompose_ILAsmCommand>
-      <_ILCompose_ILAsmCommandOptions>-debug -dll -output:</_ILCompose_ILAsmCommandOptions>
+      <_ILCompose_ILAsmCommandOptions>-nologo -quite -dll -output:</_ILCompose_ILAsmCommandOptions>
+      <!-- TODO: temporary disabled including debug information (MDB) -->
+      <!-- <_ILCompose_ILAsmCommandOptions>-nologo -quite -debug -dll -output:</_ILCompose_ILAsmCommandOptions> -->
     </PropertyGroup>
       
     <!-- For using CoreCLR ILAsm -->
@@ -118,6 +120,8 @@
     <Message Importance="normal" Text="ILCompose: CIL source code assembled. Output=@(_ILCompose_ReferenceAssembly->'%(FullPath)')" />
     <ItemGroup>
       <FileWrites Include="@(_ILCompose_ReferenceAssembly)" />
+      <FileWrites Include="@(_ILCompose_ReferenceAssembly->'%(FullPath).mdb')" />
+      <FileWrites Include="@(_ILCompose_ReferenceAssembly->'%(RootDir)%(Directory)%(Filename).pdb')" />
     </ItemGroup>
 
   </Target>
@@ -147,6 +151,7 @@
         Command="$(ILComposeBuildToolingRuntimeName)&quot;$(ILComposeBuildToolingPath)&quot; $(_ILCompose_Options) @(_ILCompose_PrimaryAssembly->'&quot;%(FullPath)&quot;',' ') @(_ILCompose_ReferenceAssembly->'&quot;%(FullPath)&quot;',' ')" />
     <ItemGroup>
       <FileWrites Include="$(_ILCompose_PrimaryAssembly)" />
+      <FileWrites Include="$(_ILCompose_PrimaryAssembly->'%(RootDir)%(Directory)%(Filename).pdb')" />
     </ItemGroup>
   </Target>
 </Project>
