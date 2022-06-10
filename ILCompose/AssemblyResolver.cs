@@ -8,80 +8,13 @@
 /////////////////////////////////////////////////////////////////////////////////////
 
 using System.IO;
-using System.Linq;
 
 using Mono.Cecil;
-using Mono.Cecil.Cil;
-using Mono.Cecil.Pdb;
 
 namespace ILCompose
 {
     internal sealed class AssemblyResolver : DefaultAssemblyResolver
     {
-        private sealed class SymbolReaderProvider : ISymbolReaderProvider
-        {
-            // HACK: cecil will lock symbol file when uses defaulted reading method.
-            //   Makes safer around entire building process.
-
-            private static readonly PdbReaderProvider parent = new();
-
-            private readonly ILogger logger;
-
-            public SymbolReaderProvider(ILogger logger) =>
-                this.logger = logger;
-
-            public ISymbolReader? GetSymbolReader(ModuleDefinition module, string fileName)
-            {
-                if (module.HasDebugHeader)
-                {
-                    var fullPath = Path.GetFullPath(fileName);
-
-                    var header = module.GetDebugHeader();
-                    if (header.Entries.
-                        FirstOrDefault(e => e.Directory.Type == ImageDebugType.EmbeddedPortablePdb) is { } entry)
-                    {
-                        var sr = new EmbeddedPortablePdbReaderProvider().
-                            GetSymbolReader(module, fileName);
-                        this.logger.Trace($"Symbol loaded from: {fullPath}");
-                        return sr;
-                    }
-
-                    var debuggingPath = Path.Combine(
-                        Utilities.GetDirectoryPath(fullPath),
-                        Path.GetFileNameWithoutExtension(fullPath) + ".pdb");
-
-                    if (File.Exists(debuggingPath))
-                    {
-                        var ms = new MemoryStream();
-                        using (var pdbStream = new FileStream(
-                            debuggingPath, FileMode.Open, FileAccess.Read, FileShare.Read))
-                        {
-                            pdbStream.CopyTo(ms);
-                        }
-                        ms.Position = 0;
-
-                        var sr = parent.GetSymbolReader(module, ms);
-                        this.logger.Trace($"Symbol loaded from: {debuggingPath}");
-                        return sr;
-                    }
-                }
-
-                this.logger.Trace($"Symbol not found: {fileName}");
-                return null;
-            }
-
-            public ISymbolReader? GetSymbolReader(ModuleDefinition module, Stream symbolStream)
-            {
-                var ms = new MemoryStream();
-                symbolStream.CopyTo(ms);
-                ms.Position = 0;
-
-                symbolStream.Dispose();
-
-                return parent.GetSymbolReader(module, ms);
-            }
-        }
-
         private readonly ILogger logger;
 
         public AssemblyResolver(ILogger logger, string[] referenceBasePaths)

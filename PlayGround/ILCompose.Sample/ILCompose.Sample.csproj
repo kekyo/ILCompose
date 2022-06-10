@@ -9,6 +9,7 @@
     <DebugType>portable</DebugType>
     <Deterministic>true</Deterministic>
 
+    <ILComposeUsingILAsmManaged>false</ILComposeUsingILAsmManaged>
     <ILComposeBuildLogLevel>Debug</ILComposeBuildLogLevel>
     <ILComposeAdjustAssemblyReferences>true</ILComposeAdjustAssemblyReferences>
     <ILComposeLaunchDebugger Condition="'$(Configuration)' == 'Debug'">false</ILComposeLaunchDebugger>
@@ -16,6 +17,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" PrivateAssets="All" />
+    <PackageReference Include="ILAsm.Managed" Version="0.1.0" PrivateAssets="All" />
   </ItemGroup>
 
   <Import Project="..\..\ILCompose\build\ILCompose.targets" />

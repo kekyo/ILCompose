@@ -9,6 +9,7 @@
     <DebugType>portable</DebugType>
     <Deterministic>true</Deterministic>
 
+    <ILComposeUsingILAsmManaged>false</ILComposeUsingILAsmManaged>
     <ILComposeBuildLogLevel>Debug</ILComposeBuildLogLevel>
     <ILComposeAdjustAssemblyReferences>true</ILComposeAdjustAssemblyReferences>
     <ILComposeLaunchDebugger Condition="'$(Configuration)' == 'Debug'">false</ILComposeLaunchDebugger>
@@ -18,6 +19,7 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.2.0" />
     <PackageReference Include="NUnit" Version="3.13.3" />
     <packagereference Include="NUnit3TestAdapter" Version="4.2.1" PrivateAssets="All" />
+    <PackageReference Include="ILAsm.Managed" Version="0.1.0" PrivateAssets="All" />
   </ItemGroup>
 
   <Import Project="..\..\ILCompose\build\ILCompose.targets" />
