@@ -147,7 +147,17 @@ public static extern void ValueTypeTest();
 ### Automatic adjusting assembly references.
 
 When assembling your loose IL source code with implicit referenced assemblies,
-`ILAsm` will cause these warnings below:
+`ILAsm` will cause these warnings below.
+
+ILAsm.Managed:
+
+```
+Warning -- Reference to undeclared extern assembly 'netstandard', adding.
+Warning -- Reference to undeclared extern assembly 'System.Runtime', adding.
+Warning -- Reference to undeclared extern assembly 'mscorlib', adding.
+```
+
+CoreCLR ILAsm:
 
 ```
 warning : Reference to undeclared extern assembly 'netstandard'. Attempting autodetect
