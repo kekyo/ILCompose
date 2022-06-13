@@ -15,6 +15,7 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Pdb;
 using Mono.Cecil.Mdb;
+using System.Collections.Generic;
 
 namespace ILCompose
 {
@@ -28,6 +29,8 @@ namespace ILCompose
         private static readonly PdbReaderProvider pdbProvider = new();
 
         private readonly ILogger logger;
+        private readonly HashSet<string> loaded = new();
+        private readonly HashSet<string> notFound = new();
 
         public SymbolReaderProvider(ILogger logger) =>
             this.logger = logger;
@@ -54,8 +57,10 @@ namespace ILCompose
                     ms.Position = 0;
 
                     var sr = provider.GetSymbolReader(module, ms);
-
-                    this.logger.Trace($"Symbol loaded from: {path}");
+                    if (loaded.Add(path))
+                    {
+                        this.logger.Trace($"Symbol loaded from: {path}");
+                    }
                     return sr;
                 }
             }
@@ -79,8 +84,11 @@ namespace ILCompose
                 {
                     try
                     {
-                        var sr = embeddedProvider.GetSymbolReader(module, fileName);
-                        this.logger.Trace($"Symbol loaded from: {fullPath}");
+                        var sr = embeddedProvider.GetSymbolReader(module, fullPath);
+                        if (loaded.Add(fullPath))
+                        {
+                            this.logger.Trace($"Embedded symbol loaded from: {fullPath}");
+                        }
                         return sr;
                     }
                     catch (Exception ex)
@@ -96,9 +104,13 @@ namespace ILCompose
                 {
                     return sr3;
                 }
+
+                if (notFound.Add(fileName))
+                {
+                    this.logger.Trace($"Symbol not found: {fileName}");
+                }
             }
 
-            this.logger.Trace($"Symbol not found: {fileName}");
             return null;
         }
 
