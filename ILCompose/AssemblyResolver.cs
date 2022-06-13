@@ -7,6 +7,7 @@
 //
 /////////////////////////////////////////////////////////////////////////////////////
 
+using System.Collections.Generic;
 using System.IO;
 
 using Mono.Cecil;
@@ -16,10 +17,14 @@ namespace ILCompose
     internal sealed class AssemblyResolver : DefaultAssemblyResolver
     {
         private readonly ILogger logger;
+        private readonly HashSet<string> loaded = new();
+        private readonly SymbolReaderProvider symbolReaderProvider;
 
         public AssemblyResolver(ILogger logger, string[] referenceBasePaths)
         {
             this.logger = logger;
+            this.symbolReaderProvider = new SymbolReaderProvider(this.logger);
+
             foreach (var referenceBasePath in referenceBasePaths)
             {
                 var fullPath = Path.GetFullPath(referenceBasePath);
@@ -35,11 +40,14 @@ namespace ILCompose
                 ReadWrite = false,
                 InMemory = true,
                 AssemblyResolver = this,
-                SymbolReaderProvider = new SymbolReaderProvider(this.logger),
+                SymbolReaderProvider = this.symbolReaderProvider,
                 ReadSymbols = true,
             };
             var ad = base.Resolve(name, parameters);
-            this.logger.Trace($"Assembly loaded: {ad.MainModule.FileName}");
+            if (loaded.Add(ad.MainModule.FileName))
+            {
+                this.logger.Trace($"Assembly loaded: {ad.MainModule.FileName}");
+            }
             return ad;
         }
 
@@ -50,11 +58,14 @@ namespace ILCompose
                 ReadWrite = false,
                 InMemory = true,
                 AssemblyResolver = this,
-                SymbolReaderProvider = new SymbolReaderProvider(this.logger),
+                SymbolReaderProvider = this.symbolReaderProvider,
                 ReadSymbols = true,
             };
             var ad = AssemblyDefinition.ReadAssembly(assemblyPath, parameters);
-            this.logger.Trace($"Assembly loaded: {ad.MainModule.FileName}");
+            if (loaded.Add(ad.MainModule.FileName))
+            {
+                this.logger.Trace($"Assembly loaded: {ad.MainModule.FileName}");
+            }
             return ad;
         }
 
@@ -65,11 +76,14 @@ namespace ILCompose
                 ReadWrite = false,
                 InMemory = true,
                 AssemblyResolver = this,
-                SymbolReaderProvider = new SymbolReaderProvider(this.logger),
+                SymbolReaderProvider = this.symbolReaderProvider,
                 ReadSymbols = true,
             };
             var md = ModuleDefinition.ReadModule(modulePath, parameters);
-            this.logger.Trace($"Module loaded: {md.FileName}");
+            if (loaded.Add(md.FileName))
+            {
+                this.logger.Trace($"Module loaded: {md.FileName}");
+            }
             return md;
         }
     }
