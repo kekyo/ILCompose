@@ -23,7 +23,7 @@ jobs:
       run: |
         $branch_name=$(git name-rev --name-only --exclude=tags/* HEAD)
         echo "Detected current branch: ${branch_name}"
-        echo "::set-output name=branch_name::${branch_name}"
+        echo "branch_name=${branch_name}" >> $GITHUB_OUTPUT
 
     #-----------------------------------------------------------------------
     # Setup environments
