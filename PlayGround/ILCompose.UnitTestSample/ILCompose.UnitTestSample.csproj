@@ -16,10 +16,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.2.0" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.4.0" />
     <PackageReference Include="NUnit" Version="3.13.3" />
-    <packagereference Include="NUnit3TestAdapter" Version="4.2.1" PrivateAssets="All" />
-    <PackageReference Include="ILAsm.Managed" Version="0.1.0" PrivateAssets="All" />
+    <packagereference Include="NUnit3TestAdapter" Version="4.3.1" PrivateAssets="All" />
+    <PackageReference Include="ILAsm.Managed" Version="1.0.0" PrivateAssets="All" />
   </ItemGroup>
 
   <Import Project="..\..\ILCompose\build\ILCompose.targets" />
