@@ -50,8 +50,8 @@ namespace ILCompose
                 if (help || (extra.Count < 2))
                 {
                     Console.Out.WriteLine($"ILCompose [{ThisAssembly.AssemblyVersion}]");
-                    Console.Out.WriteLine("  Compose partially implementation both .NET language and IL assembler.");
-                    Console.Out.WriteLine("  Copyright (c) Kouji Matsui.");
+                    Console.Out.WriteLine("Compose partially implementation both .NET language and IL assembler.");
+                    Console.Out.WriteLine("Copyright (c) Kouji Matsui.");
                     Console.Out.WriteLine("usage: ilcompose.exe [options] <primary_assembly_path> <reference_assembly_path> ...");
                     options.WriteOptionDescriptions(Console.Out);
                     return 0;
