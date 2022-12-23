@@ -20,8 +20,8 @@
     }
     .method public static class System.String TestInCIL(int32 a) cil managed
     {
-        // [Description("ABC")]
-        .custom instance void [mscorlib]System.ComponentModel.DescriptionAttribute::.ctor(string) = (
+        // [DefaultValue("ABC")]
+        .custom instance void [mscorlib]System.ComponentModel.DefaultValueAttribute::.ctor(string) = (
             01 00 03 41 42 43 00 00
         )
         .maxstack 1

@@ -190,9 +190,14 @@ namespace ILCompose
                 // Add `MethodImplAttribute`
                 // HACK: See `IsForwardRef()`
                 var c = importer.Import(methodImplConstructor);
+                var mio = importer.Import(c.Parameters[0].ParameterType);
                 var tc = new CustomAttribute(c);
-                tc.ConstructorArguments.Add(new CustomAttributeArgument(
-                    c.Module.TypeSystem.Int16, (short)MethodImplAttributes.ForwardRef));
+                var tca = new CustomAttributeArgument(
+                    mio,
+                    mio.FullName == "System.Runtime.CompilerServices.MethodImplOptions" ?
+                        MethodImplAttributes.ForwardRef :
+                        (short)MethodImplAttributes.ForwardRef);
+                tc.ConstructorArguments.Add(tca);
 
                 forwardrefMethod.CustomAttributes.Add(tc);
             }
@@ -309,9 +314,9 @@ namespace ILCompose
             var methodImplType = importer.GetForwardType(
                 "System.Runtime.CompilerServices.MethodImplAttribute");
             var methodImplConstructor = methodImplType.Resolve().Methods.
-                First(m =>
-                    m.IsConstructor &&
-                    m.Parameters.Any(p => p.ParameterType.FullName == "System.Int16"));
+                Where(m => m.IsConstructor && m.Parameters.Count == 1).
+                OrderBy(m => m.Parameters[0].ParameterType.IsPrimitive ? 1 : 0).
+                First();
 
             //////////////////////////////////////////////////////////////////////
             // Step 4. Compose

@@ -14,12 +14,20 @@ namespace ILCompose.Sample
 {
     public class TestClass
     {
-        [Description("It isn't removed!")]
+        [DefaultValue("It isn't removed!")]
+#if NETSTANDARD1_6
+        [MethodImpl((MethodImplOptions)16)]
+#else
         [MethodImpl(MethodImplOptions.ForwardRef)]
+#endif
         public static extern int TestInCIL(int a, int b);
 
         [EditorBrowsable(EditorBrowsableState.Advanced)]
+#if NETSTANDARD1_6
+        [MethodImpl((MethodImplOptions)16)]
+#else
         [MethodImpl(MethodImplOptions.ForwardRef)]
+#endif
         public static extern string TestInCIL(int a);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
