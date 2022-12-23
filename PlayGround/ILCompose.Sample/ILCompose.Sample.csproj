@@ -3,7 +3,8 @@
   <Import Project="..\..\ILCompose\build\ILCompose.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>net40;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net40;netstandard1.6;netstandard2.0</TargetFrameworks>
+    <!--<TargetFrameworks>netstandard2.0</TargetFrameworks>-->
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <DebugType>portable</DebugType>
@@ -12,8 +13,17 @@
     <ILComposeUsingILAsmManaged>true</ILComposeUsingILAsmManaged>
     <ILComposeBuildLogLevel>Debug</ILComposeBuildLogLevel>
     <ILComposeAdjustAssemblyReferences>true</ILComposeAdjustAssemblyReferences>
+
     <ILComposeLaunchDebugger Condition="'$(Configuration)' == 'Debug'">false</ILComposeLaunchDebugger>
   </PropertyGroup>
+
+  <ItemGroup>
+    <ILComposeTargetIL Remove="Excluded.il" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Excluded.il" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="All" />

@@ -10,23 +10,12 @@
 .class public ILCompose.Sample.TestClass
     extends [mscorlib]System.Object
 {
-    .method public static int32 TestInCIL(int32 a, int32 b) cil managed
+    .method public static int32 foobar(int32 a, int32 b) cil managed
     {
         .maxstack 2
         ldarg.0
         ldarg.1
         add
-        ret
-    }
-    .method public static class System.String TestInCIL(int32 a) cil managed
-    {
-        // [DefaultValue("ABC")]
-        .custom instance void [mscorlib]System.ComponentModel.DefaultValueAttribute::.ctor(string) = (
-            01 00 03 41 42 43 00 00
-        )
-        .maxstack 1
-        ldarga.s 0
-        call instance class System.String [mscorlib]System.Int32::ToString()
         ret
     }
 }
