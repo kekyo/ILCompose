@@ -37,9 +37,31 @@ namespace ILCompose
         public TypeReference GetForwardType(string fullName) =>
             this.forwardTypes[fullName];
 
-        public TypeReference Import(TypeReference type) =>
-            this.module.ImportReference(
-                (this.applyForward && this.forwardTypes.TryGetValue(type.FullName, out var tf)) ? tf : type);
+        public TypeReference Import(TypeReference type)
+        {
+            if (type is GenericParameter genericParameter)
+            {
+                if (genericParameter.Owner is MethodReference parentMethod)
+                {
+                    var importedMethod = this.Import(parentMethod);
+                    var importedGenericParameter = importedMethod.GenericParameters[genericParameter.Position];
+                    return importedGenericParameter;
+                }
+                else if (genericParameter.Owner is TypeReference parentType)
+                {
+                    var importedType = this.Import(parentType);
+                    var importedGenericParameter = importedType.GenericParameters[genericParameter.Position];
+                    return importedGenericParameter;
+                }
+            }
+            else if (this.applyForward &&
+                this.forwardTypes.TryGetValue(type.FullName, out var tf))
+            {
+                return this.module.ImportReference(tf);
+            }
+
+            return this.module.ImportReference(type);
+        }
 
         public MethodReference Import(MethodReference method)
         {
