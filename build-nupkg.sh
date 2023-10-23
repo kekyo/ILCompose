@@ -13,4 +13,4 @@ echo ""
 # git clean -xfd
 
 dotnet build -p:Configuration=Release -p:Platform="Any CPU" -p:RestoreNoCache=True ILCompose.sln
-dotnet pack -p:Configuration=Release -p:Platform="Any CPU" -o artifacts ILCompose.csproj
+dotnet pack -p:Configuration=Release -p:Platform="Any CPU" -o artifacts ILCompose.sln

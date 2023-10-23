@@ -13,6 +13,7 @@
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/kekyo/ILCompose.git</RepositoryUrl>
+    <IsPackable>False</IsPackable>
 
     <Product>ILCompose</Product>
     <Trademark>ILCompose</Trademark>
