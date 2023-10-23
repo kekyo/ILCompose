@@ -12,5 +12,5 @@ echo.
 
 rem git clean -xfd
 
-dotnet restore
-dotnet pack -p:Configuration=Release -p:Platform=AnyCPU -o artifacts ILCompose\ILCompose.csproj
+dotnet build -p:Configuration=Release -p:Platform="Any CPU" -p:RestoreNoCache=True ILCompose.sln
+dotnet pack -p:Configuration=Release -p:Platform="Any CPU" -o artifacts ILCompose.sln

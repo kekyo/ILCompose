@@ -2,16 +2,21 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net462;netcoreapp2.2;netcoreapp3.1;net5.0;net6.0;net7.0</TargetFrameworks>
+    <TargetFrameworks>net462;netcoreapp2.2;netcoreapp3.1;net5.0;net6.0;net7.0;net8.0</TargetFrameworks>
     <AssemblyName>ilcompose</AssemblyName>
 
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
       
+    <IsPackable>True</IsPackable>
     <NuspecFile>ILCompose.nuspec</NuspecFile>
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <IncludeBuildOutput>false</IncludeBuildOutput>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="('$(TargetFramework)' == 'netcoreapp3.1') OR ('$(TargetFramework)' == 'net5.0') OR ('$(TargetFramework)' == 'net6.0') OR ('$(TargetFramework)' == 'net7.0') OR ('$(TargetFramework)' == 'net8.0')">
+    <RollForward>Minor</RollForward>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,7 +24,7 @@
     <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
     <PackageReference Include="Mono.Options" Version="6.12.0.148" />
-    <PackageReference Include="Mono.Cecil" Version="0.11.4" />
+    <PackageReference Include="Mono.Cecil" Version="0.11.5" />
   </ItemGroup>
 
   <ItemGroup>

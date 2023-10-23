@@ -27,7 +27,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="All" />
-    <PackageReference Include="ILAsm.Managed" Version="1.0.0" PrivateAssets="All" />
+    <PackageReference Include="ILAsm.Managed" Version="1.1.9" PrivateAssets="All" />
   </ItemGroup>
 
   <Import Project="..\..\ILCompose\build\ILCompose.targets" />
