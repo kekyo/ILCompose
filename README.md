@@ -60,14 +60,14 @@ Only you have to do install the NuGet package [ILCompose](https://www.nuget.org/
 
 Supported target platforms:
 
-* .NET 7, 6, 5
+* .NET 8, 7, 6, 5
 * .NET Core 3.1 to 2.0 (maybe to 1.0)
 * .NET Standard 2.1, 2.0 (maybe to 1.0)
 * .NET Framework 4.8 to 2.0 (maybe to 1.0)
 
 Supported building platforms:
 
-* dotnet SDK 7, 6, 5, 3.1, 2.2 and 2.1 (on Windows and Linux)
+* dotnet SDK 8, 7, 6, 5, 3.1, 2.2 and 2.1 (on Windows and Linux)
 * .NET Framework 4.8 to 4.6.2 on Windows (With dotnet SDK installation)
 
 ----
