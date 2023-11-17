@@ -23,7 +23,7 @@ namespace IL2C.BasicTypes
     {
         // Refer IL assembly
         [MethodImpl(MethodImplOptions.ForwardRef)]
-        public static extern bool ValueTypeTest();
+        public static extern void ValueTypeTest();
     }
 }
 ```
@@ -131,7 +131,7 @@ The following C# code with the `forwardref` attribute applied cannot apply the a
 ```csharp
 // Refer IL assembly, all additional custom attribute will silently remove by ILSupport.
 [MethodImpl(MethodImplOptions.ForwardRef)]
-public static extern bool ValueTypeTest();
+public static extern void ValueTypeTest();
 ```
 
 It allows you to apply custom attributes normally, as shown below:
